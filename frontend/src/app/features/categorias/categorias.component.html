@@ -1,0 +1,58 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Categorias</h1>
+    <p>Agrupam os produtos (ex: cervejas, refrigerantes, destilados).</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNova()">+ Nova categoria</button>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (categorias().length === 0) {
+    <div class="estado-vazio">Nenhuma categoria cadastrada ainda. Crie a primeira acima.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (categoria of categorias(); track categoria.id) {
+          <tr>
+            <td>{{ categoria.nome }}</td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(categoria)">Editar</button>
+              <button type="button" class="botao-perigo" (click)="excluir(categoria)">Excluir</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="categoriaEmEdicao() ? 'Editar categoria' : 'Nova categoria'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: Cervejas" autofocus />
+        @if (form.get('nome')?.invalid && form.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

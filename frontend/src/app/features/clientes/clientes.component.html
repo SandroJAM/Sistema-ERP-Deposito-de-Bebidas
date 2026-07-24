@@ -1,0 +1,65 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Clientes</h1>
+    <p>Cadastro opcional — usado para identificar quem fez a compra numa venda.</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNovo()">+ Novo cliente</button>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (clientes().length === 0) {
+    <div class="estado-vazio">Nenhum cliente cadastrado ainda. Crie o primeiro acima.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Telefone</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cliente of clientes(); track cliente.id) {
+          <tr>
+            <td>{{ cliente.nome }}</td>
+            <td>{{ cliente.telefone || '—' }}</td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(cliente)">Editar</button>
+              <button type="button" class="botao-perigo" (click)="excluir(cliente)">Excluir</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="clienteEmEdicao() ? 'Editar cliente' : 'Novo cliente'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: João da Silva" autofocus />
+        @if (form.get('nome')?.invalid && form.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Telefone (opcional)</span>
+        <input type="text" formControlName="telefone" placeholder="Ex: 81 99999-0000" />
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

@@ -1,0 +1,154 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Vendas</h1>
+    <p>Monte a venda escolhendo os produtos — o estoque é baixado automaticamente ao finalizar.</p>
+  </div>
+</header>
+
+<div class="painel painel-venda">
+  <label class="form-campo">
+    <span>Cliente (opcional)</span>
+    <select [ngModel]="clienteSelecionadoId()" (ngModelChange)="clienteSelecionadoId.set($event)">
+      <option [ngValue]="null">Venda de balcão — sem cliente identificado</option>
+      @for (cliente of clientes(); track cliente.id) {
+        <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
+      }
+    </select>
+  </label>
+
+  <div class="busca-produto">
+    <label class="form-campo">
+      <span>Adicionar produto</span>
+      <input
+        type="text"
+        placeholder="Digite o nome do produto..."
+        [ngModel]="termoBusca()"
+        (ngModelChange)="aoDigitarBusca($event)"
+      />
+    </label>
+
+    @if (termoBusca().trim()) {
+      <div class="busca-produto__sugestoes">
+        @if (buscandoSugestoes()) {
+          <div class="busca-produto__vazio">Buscando...</div>
+        } @else if (sugestoes().length === 0) {
+          <div class="busca-produto__vazio">Nenhum produto encontrado.</div>
+        } @else {
+          @for (produto of sugestoes(); track produto.id) {
+            <button type="button" class="busca-produto__item" (click)="adicionarAoCarrinho(produto)">
+              <span>{{ produto.nome }}</span>
+              <span class="busca-produto__preco">R$ {{ produto.preco | number: '1.2-2' }} · {{ produto.estoqueAtual }} em estoque</span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  @if (carrinho().length === 0) {
+    <div class="estado-vazio">Nenhum item adicionado ainda. Busque um produto acima para começar.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th class="numero">Preço unit.</th>
+          <th class="numero">Quantidade</th>
+          <th class="numero">Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of carrinho(); track item.produto.id) {
+          <tr>
+            <td>{{ item.produto.nome }}</td>
+            <td class="numero">R$ {{ item.produto.preco | number: '1.2-2' }}</td>
+            <td class="numero">
+              <input
+                type="number"
+                class="input-quantidade"
+                min="1"
+                [ngModel]="item.quantidade"
+                (ngModelChange)="alterarQuantidade(item.produto.id, +$event)"
+              />
+            </td>
+            <td class="numero">R$ {{ item.produto.preco * item.quantidade | number: '1.2-2' }}</td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-perigo" (click)="removerDoCarrinho(item.produto.id)">Remover</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="resumo-venda">
+      <span>Total</span>
+      <strong>R$ {{ totalCarrinho() | number: '1.2-2' }}</strong>
+    </div>
+  }
+
+  @if (erroFinalizar()) {
+    <div class="alerta">{{ erroFinalizar() }}</div>
+  }
+  @if (sucesso()) {
+    <div class="alerta alerta--sucesso">{{ sucesso() }}</div>
+  }
+
+  <div class="form-acoes">
+    <button
+      type="button"
+      class="botao-primario"
+      [disabled]="carrinho().length === 0 || finalizando()"
+      (click)="finalizarVenda()"
+    >
+      {{ finalizando() ? 'Finalizando...' : 'Finalizar venda' }}
+    </button>
+  </div>
+</div>
+
+<h2 class="titulo-secao">Vendas registradas</h2>
+
+<div class="painel">
+  @if (carregandoVendas()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (vendas().length === 0) {
+    <div class="estado-vazio">Nenhuma venda registrada ainda.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Data</th>
+          <th class="numero">Itens</th>
+          <th class="numero">Total</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (venda of vendas(); track venda.id) {
+          <tr>
+            <td>{{ venda.id }}</td>
+            <td>{{ venda.dataVenda | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td class="numero">{{ venda.itens.length }}</td>
+            <td class="numero">R$ {{ venda.valorTotal | number: '1.2-2' }}</td>
+            <td>
+              <span
+                class="selo"
+                [class.selo--ativo]="venda.status === 'FINALIZADA'"
+                [class.selo--inativo]="venda.status === 'CANCELADA'"
+              >
+                {{ venda.status }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              @if (venda.status === 'FINALIZADA') {
+                <button type="button" class="botao-perigo" (click)="cancelarVenda(venda)">Cancelar</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

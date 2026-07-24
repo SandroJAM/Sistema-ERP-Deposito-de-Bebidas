@@ -1,0 +1,105 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Produtos</h1>
+    <p>Itens vendáveis, com preço, estoque e categoria.</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNovo()">+ Novo produto</button>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (produtos().length === 0) {
+    <div class="estado-vazio">Nenhum produto cadastrado ainda. Crie o primeiro acima.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th class="numero">Preço</th>
+          <th class="numero">Estoque</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (produto of produtos(); track produto.id) {
+          <tr>
+            <td>{{ produto.nome }}</td>
+            <td>{{ produto.categoriaNome }}</td>
+            <td class="numero">{{ produto.preco | number: '1.2-2' }}</td>
+            <td class="numero">{{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}</td>
+            <td>
+              <span class="selo" [class.selo--ativo]="produto.ativo" [class.selo--inativo]="!produto.ativo">
+                {{ produto.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(produto)">Editar</button>
+              <button type="button" class="botao-perigo" (click)="excluir(produto)">Excluir</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="produtoEmEdicao() ? 'Editar produto' : 'Novo produto'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: Cerveja Pilsen 350ml" autofocus />
+        @if (form.get('nome')?.invalid && form.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Categoria</span>
+        <select formControlName="categoriaId">
+          @for (categoria of categorias(); track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-campo">
+        <span>Unidade (opcional)</span>
+        <input type="text" formControlName="unidade" placeholder="Ex: unidade, caixa, litro" />
+      </label>
+
+      <label class="form-campo">
+        <span>Preço (R$)</span>
+        <input type="number" formControlName="preco" min="0" step="0.01" />
+        @if (form.get('preco')?.invalid && form.get('preco')?.touched) {
+          <small class="form-erro">Informe um preço válido.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Estoque atual</span>
+        <input type="number" formControlName="estoqueAtual" min="0" step="1" />
+        @if (form.get('estoqueAtual')?.invalid && form.get('estoqueAtual')?.touched) {
+          <small class="form-erro">Informe uma quantidade válida.</small>
+        }
+      </label>
+
+      <label class="form-checkbox">
+        <input type="checkbox" formControlName="ativo" />
+        <span>Produto ativo (aparece disponível para venda)</span>
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
