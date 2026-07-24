@@ -1,0 +1,41 @@
+<div class="layout">
+  <aside class="menu">
+    <div class="menu__marca">
+      <span class="menu__gota" aria-hidden="true"></span>
+      <span class="menu__titulo">Controle de Vendas</span>
+    </div>
+
+    <nav class="menu__nav">
+      @for (item of itensMenu; track item.rota) {
+        <a
+          [routerLink]="item.rota"
+          routerLinkActive="menu__link--ativo"
+          [routerLinkActiveOptions]="{ exact: item.rota === '/' }"
+          class="menu__link"
+        >
+          <svg class="menu__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path [attr.d]="item.icone" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>{{ item.rotulo }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="menu__rodape">
+      @if (authService.usuarioLogado(); as usuario) {
+        <div class="menu__usuario">
+          <div class="menu__avatar">{{ usuario.nome.charAt(0) }}</div>
+          <div class="menu__usuario-info">
+            <strong>{{ usuario.nome }}</strong>
+            <span>{{ usuario.perfil }}</span>
+          </div>
+        </div>
+      }
+      <button class="menu__sair" type="button" (click)="sair()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+    <router-outlet></router-outlet>
+  </main>
+</div>

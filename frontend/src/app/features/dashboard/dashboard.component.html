@@ -1,0 +1,60 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Olá, {{ authService.usuarioLogado()?.nome }} 👋</h1>
+    <p>Consulte rapidamente o preço e o estoque de qualquer produto.</p>
+  </div>
+</header>
+
+<div class="busca-preco">
+  <input
+    type="text"
+    class="busca-preco__campo"
+    placeholder="Buscar produto pelo nome..."
+    [ngModel]="busca()"
+    (ngModelChange)="aoDigitar($event)"
+    autofocus
+  />
+</div>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando produtos...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (produtos().length === 0) {
+    <div class="estado-vazio">
+      @if (busca()) {
+        Nenhum produto encontrado para "{{ busca() }}".
+      } @else {
+        Nenhum produto cadastrado ainda.
+      }
+    </div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Categoria</th>
+          <th class="numero">Preço</th>
+          <th class="numero">Estoque</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (produto of produtos(); track produto.id) {
+          <tr>
+            <td>{{ produto.nome }}</td>
+            <td>{{ produto.categoriaNome }}</td>
+            <td class="numero">R$ {{ produto.preco | number: '1.2-2' }}</td>
+            <td class="numero">{{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}</td>
+            <td>
+              <span class="selo" [class.selo--ativo]="produto.ativo" [class.selo--inativo]="!produto.ativo">
+                {{ produto.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

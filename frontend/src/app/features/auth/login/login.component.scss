@@ -1,0 +1,111 @@
+.pagina-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(600px 300px at 15% 10%, rgba(201, 138, 44, 0.10), transparent),
+    var(--cor-tinta);
+  padding: 1.5rem;
+}
+
+.cartao-login {
+  width: 100%;
+  max-width: 380px;
+  background: var(--cor-superficie);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 2rem;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+
+  &__gota {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(45deg);
+    background: linear-gradient(160deg, var(--cor-ambar-claro), var(--cor-ambar));
+  }
+
+  &__subtitulo {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--cor-texto-suave);
+  }
+
+  h1 {
+    font-size: 1.15rem;
+  }
+}
+
+.campo {
+  display: block;
+  margin-bottom: 1.1rem;
+
+  span {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--cor-texto-suave);
+    margin-bottom: 0.35rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      border-color: var(--cor-ambar);
+      outline: none;
+    }
+  }
+}
+
+.campo__erro {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--cor-perigo);
+  font-size: 0.75rem;
+}
+
+.alerta {
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  color: var(--cor-perigo);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  margin-bottom: 1.1rem;
+}
+
+.botao-entrar {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--cor-tinta);
+  color: var(--cor-texto-invertido);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cor-tinta-2);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

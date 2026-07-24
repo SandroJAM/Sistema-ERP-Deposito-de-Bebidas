@@ -1,0 +1,145 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.menu {
+  width: 236px;
+  flex: none;
+  background: var(--cor-tinta);
+  color: var(--cor-texto-invertido);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem;
+
+  &__marca {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.4rem;
+    margin-bottom: 1.75rem;
+  }
+
+  &__gota {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(45deg);
+    background: linear-gradient(160deg, var(--cor-ambar-claro), var(--cor-ambar));
+  }
+
+  &__titulo {
+    font-family: var(--fonte-display);
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: -0.01em;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    color: rgba(238, 241, 245, 0.72);
+    text-decoration: none;
+    font-size: 0.87rem;
+    font-weight: 500;
+    border-left: 2px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: var(--cor-tinta-2);
+      color: var(--cor-texto-invertido);
+    }
+
+    &--ativo {
+      background: var(--cor-tinta-2);
+      color: var(--cor-texto-invertido);
+      border-left-color: var(--cor-ambar);
+    }
+  }
+
+  &__icone {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+
+  &__rodape {
+    border-top: 1px solid rgba(238, 241, 245, 0.08);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  &__usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    padding: 0 0.4rem;
+  }
+
+  &__avatar {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--cor-ambar);
+    color: var(--cor-tinta);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+
+  &__usuario-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    overflow: hidden;
+
+    strong {
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    span {
+      font-size: 0.72rem;
+      color: rgba(238, 241, 245, 0.55);
+    }
+  }
+
+  &__sair {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    background: transparent;
+    border: 1px solid rgba(238, 241, 245, 0.14);
+    color: rgba(238, 241, 245, 0.8);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: var(--cor-tinta-2);
+    }
+  }
+}
+
+.conteudo {
+  flex: 1;
+  padding: 2rem 2.25rem;
+  min-width: 0;
+}
