@@ -36,3 +36,6 @@ Thumbs.db
 application-local.properties
 application-local.yml
 *.pem
+
+### Pasta de Controle Pessoal
+Sistema-ERP-Bebidas/
