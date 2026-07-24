@@ -1,3 +1,5 @@
+HEAD
+
 # Controle de Vendas de Bebidas
 
 Sistema de gestão de vendas de bebidas e outros produtos.
@@ -16,28 +18,32 @@ controle-vendas-bebidas/
 
 ## Stack
 
-| Camada     | Tecnologia         |
-|------------|---------------------|
-| Back-end   | Java + Spring Boot   |
-| Front-end  | Angular              |
+| Camada     | Tecnologia                    |
+| ---------- | ----------------------------- |
+| Back-end   | Java + Spring Boot            |
+| Front-end  | Angular                       |
 | Banco      | (definir: PostgreSQL / MySQL) |
-| API client | Postman              |
+| API client | Postman                       |
 
 ## Como rodar o projeto
 
 ### Back-end
+
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
+
 A API sobe por padrão em `http://localhost:8080`.
 
 ### Front-end
+
 ```bash
 cd frontend
 npm install
 ng serve
 ```
+
 A aplicação sobe por padrão em `http://localhost:4200`.
 
 ## Documentação
@@ -57,3 +63,8 @@ A aplicação sobe por padrão em `http://localhost:4200`.
 - [ ] CRUD de Cliente
 - [ ] Fluxo de Venda (registro + baixa de estoque)
 - [ ] Coleção Postman documentada
+
+# Sistema-ERP-Deposito-de-Bebidas
+
+Sistema para gerenciar Depósito de Bebidas
+57699e3c92d8a80fc9bc38a62ed80f36d80f2f85
