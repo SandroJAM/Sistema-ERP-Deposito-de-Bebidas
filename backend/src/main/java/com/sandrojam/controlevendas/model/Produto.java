@@ -1,0 +1,49 @@
+package com.sandrojam.controlevendas.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "produto")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String nome;
+
+    private String unidade;
+
+    @NotNull
+    @PositiveOrZero
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal preco;
+
+    @NotNull
+    @PositiveOrZero
+    @Column(name = "estoque_atual", nullable = false)
+    private Integer estoqueAtual = 0;
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
+}
