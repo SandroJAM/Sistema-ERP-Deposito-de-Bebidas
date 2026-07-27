@@ -19,6 +19,13 @@ public class ProdutoDTO {
     @PositiveOrZero
     private BigDecimal preco;
 
+    /**
+     * Preço de custo: campo de uso interno, editável apenas na tela de Produto.
+     */
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal precoCusto;
+
     @NotNull
     @PositiveOrZero
     private Integer estoqueAtual;
@@ -29,6 +36,10 @@ public class ProdutoDTO {
     private Long categoriaId;
 
     private String categoriaNome;
+
+    private Long fornecedorId;
+
+    private String fornecedorNome;
 
     public ProdutoDTO() {
     }
@@ -95,5 +106,29 @@ public class ProdutoDTO {
 
     public void setCategoriaNome(String categoriaNome) {
         this.categoriaNome = categoriaNome;
+    }
+
+    public BigDecimal getPrecoCusto() {
+        return precoCusto;
+    }
+
+    public void setPrecoCusto(BigDecimal precoCusto) {
+        this.precoCusto = precoCusto;
+    }
+
+    public Long getFornecedorId() {
+        return fornecedorId;
+    }
+
+    public void setFornecedorId(Long fornecedorId) {
+        this.fornecedorId = fornecedorId;
+    }
+
+    public String getFornecedorNome() {
+        return fornecedorNome;
+    }
+
+    public void setFornecedorNome(String fornecedorNome) {
+        this.fornecedorNome = fornecedorNome;
     }
 }

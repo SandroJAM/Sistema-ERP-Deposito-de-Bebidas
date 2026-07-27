@@ -34,6 +34,15 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
+    /**
+     * Preço de custo (quanto pagamos ao fornecedor). Uso interno: só é exposto
+     * e editável na tela de CRUD de Produto, não aparece em vendas nem relatórios.
+     */
+    @NotNull
+    @PositiveOrZero
+    @Column(name = "preco_custo", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoCusto = BigDecimal.ZERO;
+
     @NotNull
     @PositiveOrZero
     @Column(name = "estoque_atual", nullable = false)
@@ -46,4 +55,8 @@ public class Produto {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
 }

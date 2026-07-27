@@ -4,8 +4,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ProdutoService } from '../../core/services/produto.service';
 import { CategoriaService } from '../../core/services/categoria.service';
+import { FornecedorService } from '../../core/services/fornecedor.service';
 import { Produto } from '../../core/models/produto.model';
 import { Categoria } from '../../core/models/categoria.model';
+import { Fornecedor } from '../../core/models/fornecedor.model';
 import { ModalComponent } from '../../shared/ui/modal/modal.component';
 
 @Component({
@@ -17,10 +19,12 @@ import { ModalComponent } from '../../shared/ui/modal/modal.component';
 export class ProdutosComponent implements OnInit {
   private produtoService = inject(ProdutoService);
   private categoriaService = inject(CategoriaService);
+  private fornecedorService = inject(FornecedorService);
   private fb = inject(FormBuilder);
 
   produtos = signal<Produto[]>([]);
   categorias = signal<Categoria[]>([]);
+  fornecedores = signal<Fornecedor[]>([]);
   carregando = signal(true);
   erro = signal<string | null>(null);
 
@@ -32,9 +36,11 @@ export class ProdutosComponent implements OnInit {
     nome: ['', [Validators.required, Validators.minLength(2)]],
     unidade: [''],
     preco: [0, [Validators.required, Validators.min(0)]],
+    precoCusto: [0, [Validators.required, Validators.min(0)]],
     estoqueAtual: [0, [Validators.required, Validators.min(0)]],
     ativo: [true],
     categoriaId: [null as number | null, [Validators.required]],
+    fornecedorId: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -48,10 +54,12 @@ export class ProdutosComponent implements OnInit {
     forkJoin({
       produtos: this.produtoService.listar(),
       categorias: this.categoriaService.listar(),
+      fornecedores: this.fornecedorService.listar(),
     }).subscribe({
-      next: ({ produtos, categorias }) => {
+      next: ({ produtos, categorias, fornecedores }) => {
         this.produtos.set(produtos);
         this.categorias.set(categorias);
+        this.fornecedores.set(fornecedores);
         this.carregando.set(false);
       },
       error: () => {
@@ -71,9 +79,11 @@ export class ProdutosComponent implements OnInit {
       nome: '',
       unidade: '',
       preco: 0,
+      precoCusto: 0,
       estoqueAtual: 0,
       ativo: true,
       categoriaId: this.categorias()[0].id,
+      fornecedorId: null,
     });
     this.modalAberto.set(true);
   }
@@ -84,9 +94,11 @@ export class ProdutosComponent implements OnInit {
       nome: produto.nome,
       unidade: produto.unidade ?? '',
       preco: produto.preco,
+      precoCusto: produto.precoCusto,
       estoqueAtual: produto.estoqueAtual,
       ativo: produto.ativo,
       categoriaId: produto.categoriaId,
+      fornecedorId: produto.fornecedorId,
     });
     this.modalAberto.set(true);
   }
@@ -107,9 +119,11 @@ export class ProdutosComponent implements OnInit {
       nome: valores.nome!,
       unidade: valores.unidade || null,
       preco: Number(valores.preco),
+      precoCusto: Number(valores.precoCusto),
       estoqueAtual: Number(valores.estoqueAtual),
       ativo: !!valores.ativo,
       categoriaId: Number(valores.categoriaId),
+      fornecedorId: valores.fornecedorId ? Number(valores.fornecedorId) : null,
     };
 
     const emEdicao = this.produtoEmEdicao();

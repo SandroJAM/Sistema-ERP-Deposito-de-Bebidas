@@ -1,0 +1,93 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Fornecedores</h1>
+    <p>Empresas ou pessoas que fornecem os produtos do estoque.</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNovo()">+ Novo fornecedor</button>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (fornecedores().length === 0) {
+    <div class="estado-vazio">Nenhum fornecedor cadastrado ainda. Crie o primeiro acima.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CNPJ/CPF</th>
+          <th>Telefone</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+          <tr>
+            <td>{{ fornecedor.nome }}</td>
+            <td>{{ fornecedor.cnpjCpf || '—' }}</td>
+            <td>{{ fornecedor.telefone || '—' }}</td>
+            <td>{{ fornecedor.email || '—' }}</td>
+            <td>
+              <span class="selo" [class.selo--ativo]="fornecedor.ativo" [class.selo--inativo]="!fornecedor.ativo">
+                {{ fornecedor.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(fornecedor)">Editar</button>
+              <button type="button" class="botao-perigo" (click)="excluir(fornecedor)">Excluir</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="fornecedorEmEdicao() ? 'Editar fornecedor' : 'Novo fornecedor'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: Distribuidora Bebidas Ltda" autofocus />
+        @if (form.get('nome')?.invalid && form.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>CNPJ/CPF (opcional)</span>
+        <input type="text" formControlName="cnpjCpf" placeholder="Ex: 12.345.678/0001-90" />
+      </label>
+
+      <label class="form-campo">
+        <span>Telefone (opcional)</span>
+        <input type="text" formControlName="telefone" placeholder="Ex: 81 99999-0000" />
+      </label>
+
+      <label class="form-campo">
+        <span>Email (opcional)</span>
+        <input type="email" formControlName="email" placeholder="Ex: contato@fornecedor.com" />
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <small class="form-erro">Informe um email válido.</small>
+        }
+      </label>
+
+      <label class="form-checkbox">
+        <input type="checkbox" formControlName="ativo" />
+        <span>Fornecedor ativo</span>
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

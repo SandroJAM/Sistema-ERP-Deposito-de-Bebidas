@@ -21,17 +21,33 @@ Agrupa os produtos (ex: bebidas, salgados).
 | id    | Long (PK) |
 | nome  | String |
 
+### Fornecedor
+Empresas ou pessoas que fornecem os produtos do estoque.
+
+| Campo     | Tipo |
+|-----------|------|
+| id        | Long (PK) |
+| nome      | String |
+| cnpj_cpf  | String (opcional) |
+| telefone  | String (opcional) |
+| email     | String (opcional) |
+| ativo     | Boolean |
+
 ### Produto
 
 | Campo          | Tipo    |
 |----------------|---------|
 | id             | Long (PK) |
 | categoria_id   | Long (FK → Categoria) |
+| fornecedor_id  | Long (FK → Fornecedor, opcional) |
 | nome           | String  |
 | unidade        | String  |
 | preco          | Decimal |
+| preco_custo    | Decimal (uso interno) |
 | estoque_atual  | Integer |
 | ativo          | Boolean |
+
+> `preco_custo` é de uso interno: fica visível e editável apenas na tela de CRUD de Produto — não aparece em vendas, no dashboard nem em nenhum outro lugar do sistema.
 
 ### Cliente
 Opcional em cada venda.
@@ -71,6 +87,7 @@ Opcional em cada venda.
 - Uma `Venda` contém vários `ItemVenda`.
 - Um `Produto` pode aparecer em vários `ItemVenda`.
 - Uma `Categoria` classifica vários `Produto`.
+- Um `Fornecedor` pode fornecer vários `Produto` (vínculo opcional).
 
 ## Regras de negócio iniciais
 

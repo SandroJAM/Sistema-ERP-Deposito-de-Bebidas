@@ -3,12 +3,15 @@ package com.sandrojam.controlevendas.service;
 import com.sandrojam.controlevendas.dto.ProdutoDTO;
 import com.sandrojam.controlevendas.exception.ResourceNotFoundException;
 import com.sandrojam.controlevendas.model.Categoria;
+import com.sandrojam.controlevendas.model.Fornecedor;
 import com.sandrojam.controlevendas.model.Produto;
 import com.sandrojam.controlevendas.repository.CategoriaRepository;
+import com.sandrojam.controlevendas.repository.FornecedorRepository;
 import com.sandrojam.controlevendas.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -17,10 +20,13 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final FornecedorRepository fornecedorRepository;
 
-    public ProdutoService(ProdutoRepository produtoRepository, CategoriaRepository categoriaRepository) {
+    public ProdutoService(ProdutoRepository produtoRepository, CategoriaRepository categoriaRepository,
+                           FornecedorRepository fornecedorRepository) {
         this.produtoRepository = produtoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.fornecedorRepository = fornecedorRepository;
     }
 
     @Transactional(readOnly = true)
@@ -50,9 +56,10 @@ public class ProdutoService {
 
     public ProdutoDTO criar(ProdutoDTO dto) {
         Categoria categoria = buscarCategoria(dto.getCategoriaId());
+        Fornecedor fornecedor = buscarFornecedor(dto.getFornecedorId());
 
         Produto produto = new Produto();
-        aplicarDTO(produto, dto, categoria);
+        aplicarDTO(produto, dto, categoria, fornecedor);
 
         return toDTO(produtoRepository.save(produto));
     }
@@ -60,8 +67,9 @@ public class ProdutoService {
     public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
         Produto produto = buscarEntidade(id);
         Categoria categoria = buscarCategoria(dto.getCategoriaId());
+        Fornecedor fornecedor = buscarFornecedor(dto.getFornecedorId());
 
-        aplicarDTO(produto, dto, categoria);
+        aplicarDTO(produto, dto, categoria, fornecedor);
 
         return toDTO(produtoRepository.save(produto));
     }
@@ -71,13 +79,15 @@ public class ProdutoService {
         produtoRepository.delete(produto);
     }
 
-    private void aplicarDTO(Produto produto, ProdutoDTO dto, Categoria categoria) {
+    private void aplicarDTO(Produto produto, ProdutoDTO dto, Categoria categoria, Fornecedor fornecedor) {
         produto.setNome(dto.getNome());
         produto.setUnidade(dto.getUnidade());
         produto.setPreco(dto.getPreco());
+        produto.setPrecoCusto(dto.getPrecoCusto() != null ? dto.getPrecoCusto() : BigDecimal.ZERO);
         produto.setEstoqueAtual(dto.getEstoqueAtual());
         produto.setAtivo(dto.getAtivo() != null ? dto.getAtivo() : true);
         produto.setCategoria(categoria);
+        produto.setFornecedor(fornecedor);
     }
 
     private Produto buscarEntidade(Long id) {
@@ -90,16 +100,32 @@ public class ProdutoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + categoriaId));
     }
 
+    /**
+     * Fornecedor é opcional no cadastro de Produto — retorna null se o id não vier preenchido.
+     */
+    private Fornecedor buscarFornecedor(Long fornecedorId) {
+        if (fornecedorId == null) {
+            return null;
+        }
+        return fornecedorRepository.findById(fornecedorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado: " + fornecedorId));
+    }
+
     private ProdutoDTO toDTO(Produto produto) {
         ProdutoDTO dto = new ProdutoDTO();
         dto.setId(produto.getId());
         dto.setNome(produto.getNome());
         dto.setUnidade(produto.getUnidade());
         dto.setPreco(produto.getPreco());
+        dto.setPrecoCusto(produto.getPrecoCusto());
         dto.setEstoqueAtual(produto.getEstoqueAtual());
         dto.setAtivo(produto.getAtivo());
         dto.setCategoriaId(produto.getCategoria().getId());
         dto.setCategoriaNome(produto.getCategoria().getNome());
+        if (produto.getFornecedor() != null) {
+            dto.setFornecedorId(produto.getFornecedor().getId());
+            dto.setFornecedorNome(produto.getFornecedor().getNome());
+        }
         return dto;
     }
 }

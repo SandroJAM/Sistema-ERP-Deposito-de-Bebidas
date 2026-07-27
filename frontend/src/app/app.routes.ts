@@ -7,6 +7,7 @@ import { ProdutosComponent } from './features/produtos/produtos.component';
 import { CategoriasComponent } from './features/categorias/categorias.component';
 import { ClientesComponent } from './features/clientes/clientes.component';
 import { VendasComponent } from './features/vendas/vendas.component';
+import { FornecedoresComponent } from './features/fornecedores/fornecedores.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -18,6 +19,7 @@ export const routes: Routes = [
       { path: '', component: DashboardComponent },
       { path: 'produtos', component: ProdutosComponent },
       { path: 'categorias', component: CategoriasComponent },
+      { path: 'fornecedores', component: FornecedoresComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'vendas', component: VendasComponent },
     ],

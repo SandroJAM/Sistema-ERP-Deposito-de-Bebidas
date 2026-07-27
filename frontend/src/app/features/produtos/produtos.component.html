@@ -19,6 +19,8 @@
         <tr>
           <th>Nome</th>
           <th>Categoria</th>
+          <th>Fornecedor</th>
+          <th class="numero">Preço custo</th>
           <th class="numero">Preço</th>
           <th class="numero">Estoque</th>
           <th>Status</th>
@@ -30,6 +32,8 @@
           <tr>
             <td>{{ produto.nome }}</td>
             <td>{{ produto.categoriaNome }}</td>
+            <td>{{ produto.fornecedorNome || '—' }}</td>
+            <td class="numero">{{ produto.precoCusto | number: '1.2-2' }}</td>
             <td class="numero">{{ produto.preco | number: '1.2-2' }}</td>
             <td class="numero">{{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}</td>
             <td>
@@ -69,12 +73,31 @@
       </label>
 
       <label class="form-campo">
+        <span>Fornecedor (opcional)</span>
+        <select formControlName="fornecedorId">
+          <option [ngValue]="null">— Nenhum —</option>
+          @for (fornecedor of fornecedores(); track fornecedor.id) {
+            <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-campo">
         <span>Unidade (opcional)</span>
         <input type="text" formControlName="unidade" placeholder="Ex: unidade, caixa, litro" />
       </label>
 
       <label class="form-campo">
-        <span>Preço (R$)</span>
+        <span>Preço de custo (R$)</span>
+        <input type="number" formControlName="precoCusto" min="0" step="0.01" />
+        @if (form.get('precoCusto')?.invalid && form.get('precoCusto')?.touched) {
+          <small class="form-erro">Informe um preço de custo válido.</small>
+        }
+        <small class="form-dica">Uso interno — não aparece em vendas nem para o cliente.</small>
+      </label>
+
+      <label class="form-campo">
+        <span>Preço de venda (R$)</span>
         <input type="number" formControlName="preco" min="0" step="0.01" />
         @if (form.get('preco')?.invalid && form.get('preco')?.touched) {
           <small class="form-erro">Informe um preço válido.</small>
