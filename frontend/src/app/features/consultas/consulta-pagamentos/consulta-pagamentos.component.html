@@ -1,0 +1,105 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Consulta de Pagamentos</h1>
+    <p>Parcelas geradas a partir das notas de entrada — filtre por fornecedor, status ou vencimento.</p>
+  </div>
+</header>
+
+<div class="painel">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Fornecedor</span>
+      <select [ngModel]="fornecedorSelecionadoId()" (ngModelChange)="fornecedorSelecionadoId.set($event); aoMudarFiltro()">
+        <option [ngValue]="null">Todos</option>
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+          <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Status</span>
+      <select [ngModel]="statusSelecionado()" (ngModelChange)="statusSelecionado.set($event); aoMudarFiltro()">
+        <option [ngValue]="null">Todos</option>
+        <option value="PENDENTE">Pendente</option>
+        <option value="PAGO">Pago</option>
+        <option value="CANCELADO">Cancelado</option>
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Vencimento de</span>
+      <input
+        type="date"
+        [ngModel]="vencimentoDe()"
+        (ngModelChange)="vencimentoDe.set($event || null); aoMudarFiltro()"
+      />
+    </label>
+
+    <label class="form-campo">
+      <span>Vencimento até</span>
+      <input
+        type="date"
+        [ngModel]="vencimentoAte()"
+        (ngModelChange)="vencimentoAte.set($event || null); aoMudarFiltro()"
+      />
+    </label>
+  </div>
+
+  <div class="form-acoes">
+    <button type="button" class="botao-secundario" (click)="limparFiltros()">Limpar filtros</button>
+  </div>
+</div>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (pagamentos().length === 0) {
+    <div class="estado-vazio">Nenhum pagamento encontrado para os filtros selecionados.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Fatura</th>
+          <th class="numero">Parcela</th>
+          <th>Fornecedor</th>
+          <th>Nota</th>
+          <th>Emissão</th>
+          <th>Vencimento</th>
+          <th class="numero">Valor</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pagamento of pagamentos(); track pagamento.id) {
+          <tr>
+            <td>{{ pagamento.numeroFatura }}</td>
+            <td class="numero">{{ pagamento.numeroParcela }}</td>
+            <td>{{ pagamento.fornecedorNome ?? '—' }}</td>
+            <td>#{{ pagamento.notaEntradaId }}</td>
+            <td>{{ pagamento.dataEmissao | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ pagamento.dataVencimento | date: 'dd/MM/yyyy' }}</td>
+            <td class="numero">R$ {{ pagamento.valorAPagar | number: '1.2-2' }}</td>
+            <td>
+              <span
+                class="selo"
+                [class.selo--ativo]="pagamento.status === 'PAGO'"
+                [class.selo--inativo]="pagamento.status !== 'PAGO'"
+              >
+                {{ pagamento.status }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              @if (pagamento.status === 'PENDENTE') {
+                <button type="button" class="botao-secundario" (click)="marcarComoPago(pagamento)">
+                  Marcar pago
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

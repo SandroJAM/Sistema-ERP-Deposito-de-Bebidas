@@ -1,0 +1,74 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Consulta de Notas de Entrada</h1>
+    <p>Notas registradas, seus status e as parcelas de pagamento geradas.</p>
+  </div>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (notas().length === 0) {
+    <div class="estado-vazio">Nenhuma nota de entrada registrada ainda.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nota</th>
+          <th>Fornecedor</th>
+          <th>Data</th>
+          <th class="numero">Valor</th>
+          <th>Status</th>
+          <th>Pagamento(s)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (nota of notas(); track nota.id) {
+          <tr>
+            <td>#{{ nota.numero }}</td>
+            <td>{{ nota.fornecedorNome ?? '—' }}</td>
+            <td>{{ nota.dataNota | date: 'dd/MM/yyyy' }}</td>
+            <td class="numero">R$ {{ nota.valorNota | number: '1.2-2' }}</td>
+            <td>
+              <span
+                class="selo"
+                [class.selo--ativo]="nota.status === 'ATIVA'"
+                [class.selo--inativo]="nota.status === 'CANCELADA'"
+              >
+                {{ nota.status }}
+              </span>
+            </td>
+            <td>
+              @for (pagamento of nota.pagamentos; track pagamento.id) {
+                <div class="pagamento-linha">
+                  <span>
+                    {{ pagamento.numeroParcela }}ª parcela · R$ {{ pagamento.valorAPagar | number: '1.2-2' }} ·
+                    vence {{ pagamento.dataVencimento | date: 'dd/MM/yyyy' }}
+                  </span>
+                  <span
+                    class="selo"
+                    [class.selo--ativo]="pagamento.status === 'PAGO'"
+                    [class.selo--inativo]="pagamento.status !== 'PAGO'"
+                  >
+                    {{ pagamento.status }}
+                  </span>
+                  @if (pagamento.status === 'PENDENTE') {
+                    <button type="button" class="botao-secundario" (click)="marcarPagamentoComoPago(pagamento)">
+                      Marcar pago
+                    </button>
+                  }
+                </div>
+              }
+            </td>
+            <td class="acoes-linha">
+              @if (nota.status === 'ATIVA') {
+                <button type="button" class="botao-perigo" (click)="cancelarNota(nota)">Cancelar</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -6,18 +6,30 @@
     </div>
 
     <nav class="menu__nav">
-      @for (item of itensMenu; track item.rota) {
-        <a
-          [routerLink]="item.rota"
-          routerLinkActive="menu__link--ativo"
-          [routerLinkActiveOptions]="{ exact: item.rota === '/' }"
-          class="menu__link"
-        >
-          <svg class="menu__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path [attr.d]="item.icone" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <span>{{ item.rotulo }}</span>
-        </a>
+      <a
+        [routerLink]="itemInicio.rota"
+        routerLinkActive="menu__link--ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="menu__link"
+      >
+        <svg class="menu__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path [attr.d]="itemInicio.icone" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>{{ itemInicio.rotulo }}</span>
+      </a>
+
+      @for (grupo of gruposMenu; track grupo.titulo) {
+        <div class="menu__grupo">
+          <span class="menu__grupo-titulo">{{ grupo.titulo }}</span>
+          @for (item of grupo.itens; track item.rota) {
+            <a [routerLink]="item.rota" routerLinkActive="menu__link--ativo" class="menu__link">
+              <svg class="menu__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path [attr.d]="item.icone" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>{{ item.rotulo }}</span>
+            </a>
+          }
+        </div>
       }
     </nav>
 

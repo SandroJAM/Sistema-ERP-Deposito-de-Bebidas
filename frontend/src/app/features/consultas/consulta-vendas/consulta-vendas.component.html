@@ -1,0 +1,51 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Consulta de Vendas</h1>
+    <p>Vendas registradas e seus status.</p>
+  </div>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (vendas().length === 0) {
+    <div class="estado-vazio">Nenhuma venda registrada ainda.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Data</th>
+          <th class="numero">Itens</th>
+          <th class="numero">Total</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (venda of vendas(); track venda.id) {
+          <tr>
+            <td>{{ venda.id }}</td>
+            <td>{{ venda.dataVenda | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td class="numero">{{ venda.itens.length }}</td>
+            <td class="numero">R$ {{ venda.valorTotal | number: '1.2-2' }}</td>
+            <td>
+              <span
+                class="selo"
+                [class.selo--ativo]="venda.status === 'FINALIZADA'"
+                [class.selo--inativo]="venda.status === 'CANCELADA'"
+              >
+                {{ venda.status }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              @if (venda.status === 'FINALIZADA') {
+                <button type="button" class="botao-perigo" (click)="cancelarVenda(venda)">Cancelar</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

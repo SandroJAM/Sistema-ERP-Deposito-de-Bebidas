@@ -8,7 +8,6 @@ import { ClienteService } from '../../core/services/cliente.service';
 import { VendaService } from '../../core/services/venda.service';
 import { Produto } from '../../core/models/produto.model';
 import { Cliente } from '../../core/models/cliente.model';
-import { Venda } from '../../core/models/venda.model';
 
 interface ItemCarrinho {
   produto: Produto;
@@ -27,7 +26,6 @@ export class VendasComponent implements OnInit, OnDestroy {
   private vendaService = inject(VendaService);
   private authService = inject(AuthService);
 
-  // ----- Montagem da venda -----
   clientes = signal<Cliente[]>([]);
   clienteSelecionadoId = signal<number | null>(null);
 
@@ -46,13 +44,8 @@ export class VendasComponent implements OnInit, OnDestroy {
 
   private buscaSubject = new Subject<string>();
 
-  // ----- Vendas já registradas -----
-  vendas = signal<Venda[]>([]);
-  carregandoVendas = signal(true);
-
   ngOnInit(): void {
     this.clienteService.listar().subscribe((clientes) => this.clientes.set(clientes));
-    this.carregarVendas();
 
     this.buscaSubject
       .pipe(
@@ -74,18 +67,6 @@ export class VendasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.buscaSubject.complete();
-  }
-
-  carregarVendas(): void {
-    this.carregandoVendas.set(true);
-    this.vendaService.listar().subscribe({
-      next: (vendas) => {
-        // mais recentes primeiro
-        this.vendas.set([...vendas].sort((a, b) => b.id - a.id));
-        this.carregandoVendas.set(false);
-      },
-      error: () => this.carregandoVendas.set(false),
-    });
   }
 
   aoDigitarBusca(valor: string): void {
@@ -144,10 +125,11 @@ export class VendasComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (venda) => {
           this.finalizando.set(false);
-          this.sucesso.set(`Venda #${venda.id} registrada — total de R$ ${venda.valorTotal.toFixed(2)}.`);
+          this.sucesso.set(
+            `Venda #${venda.id} registrada — total de R$ ${venda.valorTotal.toFixed(2)}. Confira em Consultas > Vendas.`
+          );
           this.carrinho.set([]);
           this.clienteSelecionadoId.set(null);
-          this.carregarVendas();
         },
         error: (erro) => {
           this.finalizando.set(false);
@@ -158,17 +140,5 @@ export class VendasComponent implements OnInit, OnDestroy {
           );
         },
       });
-  }
-
-  cancelarVenda(venda: Venda): void {
-    const confirmou = confirm(`Cancelar a venda #${venda.id}? O estoque dos itens será devolvido.`);
-    if (!confirmou) {
-      return;
-    }
-
-    this.vendaService.cancelar(venda.id).subscribe({
-      next: () => this.carregarVendas(),
-      error: () => alert('Não foi possível cancelar essa venda.'),
-    });
   }
 }

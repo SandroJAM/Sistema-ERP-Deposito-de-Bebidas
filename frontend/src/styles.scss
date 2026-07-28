@@ -327,6 +327,33 @@ a {
   &:focus { border-color: var(--cor-ambar); outline: none; }
 }
 
+.input-valor {
+  width: 100px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  text-align: right;
+  font-family: var(--fonte-dados);
+
+  &:focus { border-color: var(--cor-ambar); outline: none; }
+}
+
+.grade-formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 1rem;
+}
+
+.pagamento-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+
+  &:not(:last-child) { border-bottom: 1px dashed var(--cor-borda); }
+}
+
 .resumo-venda {
   display: flex;
   justify-content: flex-end;

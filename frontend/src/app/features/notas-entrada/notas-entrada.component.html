@@ -1,0 +1,158 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Notas de Entrada</h1>
+    <p>Registre a nota do fornecedor — o estoque é somado e o pagamento é gerado automaticamente ao confirmar.</p>
+  </div>
+</header>
+
+<div class="painel painel-venda">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Número da nota</span>
+      <input type="text" placeholder="Ex.: 12345" [ngModel]="numero()" (ngModelChange)="numero.set($event)" />
+    </label>
+
+    <label class="form-campo">
+      <span>Fornecedor (opcional)</span>
+      <select [ngModel]="fornecedorSelecionadoId()" (ngModelChange)="fornecedorSelecionadoId.set($event)">
+        <option [ngValue]="null">Não informado</option>
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+          <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Data da nota</span>
+      <input type="date" [ngModel]="dataNota()" (ngModelChange)="dataNota.set($event)" />
+    </label>
+
+    <label class="form-campo">
+      <span>Vencimento</span>
+      <input type="date" [ngModel]="vencimento()" (ngModelChange)="vencimento.set($event)" />
+    </label>
+
+    <label class="form-campo">
+      <span>Valor da nota (R$)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        placeholder="0,00"
+        [inputDinheiro]="valorNota()"
+        (inputDinheiroChange)="valorNota.set($event)"
+        (keydown.enter)="campoBusca.focus()"
+      />
+    </label>
+  </div>
+
+  <div class="busca-produto">
+    <label class="form-campo">
+      <span>Adicionar item</span>
+      <input
+        #campoBusca
+        type="text"
+        placeholder="Digite o nome do produto..."
+        [ngModel]="termoBusca()"
+        (ngModelChange)="aoDigitarBusca($event)"
+      />
+    </label>
+
+    @if (termoBusca().trim()) {
+      <div class="busca-produto__sugestoes">
+        @if (buscandoSugestoes()) {
+          <div class="busca-produto__vazio">Buscando...</div>
+        } @else if (sugestoes().length === 0) {
+          <div class="busca-produto__vazio">Nenhum produto encontrado.</div>
+        } @else {
+          @for (produto of sugestoes(); track produto.id) {
+            <button type="button" class="busca-produto__item" (click)="adicionarItem(produto)">
+              <span>{{ produto.nome }}</span>
+              <span class="busca-produto__preco">
+                Custo atual: R$ {{ produto.precoCusto | number: '1.2-2' }} · {{ produto.estoqueAtual }} em estoque
+              </span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  @if (itens().length === 0) {
+    <div class="estado-vazio">Nenhum item adicionado ainda. Busque um produto acima para começar.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th class="numero">Quantidade</th>
+          <th class="numero">Valor unit.</th>
+          <th class="numero">Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of itens(); track item.produto.id) {
+          <tr>
+            <td>{{ item.produto.nome }}</td>
+            <td class="numero">
+              <input
+                type="number"
+                class="input-quantidade"
+                min="1"
+                [ngModel]="item.quantidade"
+                (ngModelChange)="alterarQuantidadeItem(item.produto.id, +$event)"
+                (focus)="selecionarTudo($event)"
+              />
+            </td>
+            <td class="numero">
+              <input
+                type="text"
+                inputmode="decimal"
+                class="input-valor"
+                [inputDinheiro]="item.valorUnitario"
+                (inputDinheiroChange)="alterarValorUnitarioItem(item.produto.id, $event)"
+              />
+            </td>
+            <td class="numero">R$ {{ item.quantidade * item.valorUnitario | number: '1.2-2' }}</td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-perigo" (click)="removerItem(item.produto.id)">Remover</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="resumo-venda">
+      <span>Soma dos itens</span>
+      <strong>R$ {{ somaItens() | number: '1.2-2' }}</strong>
+      <button type="button" class="botao-secundario" (click)="usarSomaComoValorNota()">
+        Usar como valor da nota
+      </button>
+    </div>
+
+    @if (valorNota() != null && !notaBate()) {
+      <div class="alerta">
+        Diferença de R$ {{ diferenca() | number: '1.2-2' }} entre o valor da nota e a soma dos itens. A nota não
+        pode ser gravada com divergência.
+      </div>
+    }
+  }
+
+  @if (erroSalvar()) {
+    <div class="alerta">{{ erroSalvar() }}</div>
+  }
+  @if (sucesso()) {
+    <div class="alerta alerta--sucesso">{{ sucesso() }}</div>
+  }
+
+  <div class="form-acoes">
+    <button
+      type="button"
+      class="botao-primario"
+      [disabled]="itens().length === 0 || salvando()"
+      (click)="registrarNota()"
+    >
+      {{ salvando() ? 'Registrando...' : 'Registrar nota' }}
+    </button>
+  </div>
+</div>
