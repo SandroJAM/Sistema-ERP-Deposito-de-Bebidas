@@ -103,6 +103,12 @@
     gap: 0.6rem;
     margin-bottom: 0.75rem;
     padding: 0 0.4rem;
+
+    &--topo {
+      margin: 0 0 1.25rem;
+      padding: 0 0.4rem 1rem;
+      border-bottom: 1px solid rgba(238, 241, 245, 0.08);
+    }
   }
 
   &__avatar {
