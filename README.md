@@ -65,6 +65,7 @@ A aplicação sobe por padrão em `http://localhost:4200`.
 - [x] CRUD de Cliente
 - [x] CRUD de Fornecedor
 - [x] Fluxo de Venda (registro + baixa de estoque)
+- [x] Fluxo de Nota de Entrada (registro + entrada de estoque + geração automática de Pagamento)
 - [ ] Coleção Postman documentada
 - [ ] Migrations (Flyway) para produção
 - [ ] Perfis de acesso (admin vs. vendedor)
