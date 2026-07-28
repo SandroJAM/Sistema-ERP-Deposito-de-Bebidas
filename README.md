@@ -1,5 +1,3 @@
-HEAD
-
 # Controle de Vendas de Bebidas
 
 Sistema de gestão de vendas de bebidas e outros produtos.
@@ -18,11 +16,12 @@ controle-vendas-bebidas/
 
 ## Stack
 
-| Camada     | Tecnologia                    |
-| ---------- | ----------------------------- |
-| Back-end   | Java + Spring Boot            |
-| Front-end  | Angular                       |
-| Banco      | (definir: PostgreSQL / MySQL) |
+| Camada     | Tecnologia             |
+| ---------- | ------------------------ |
+| Back-end   | Java + Spring Boot        |
+| Front-end  | Angular                    |
+| Banco      | PostgreSQL                  |
+| Auth       | JWT (Spring Security)        |
 | API client | Postman                       |
 
 ## Como rodar o projeto
@@ -31,6 +30,9 @@ controle-vendas-bebidas/
 
 ```bash
 cd backend
+cp src/main/resources/application-local.properties.example src/main/resources/application-local.properties
+# ajuste usuário/senha do seu Postgres no arquivo acima (ou defina a variável DB_PASSWORD)
+createdb controle_vendas_bebidas
 ./mvnw spring-boot:run
 ```
 
@@ -52,19 +54,17 @@ A aplicação sobe por padrão em `http://localhost:4200`.
 
 ## Status do projeto
 
-🚧 Em desenvolvimento inicial.
+🚧 Em desenvolvimento.
 
 - [x] Definição da stack
 - [x] Modelo de dados inicial
-- [ ] Scaffold do back-end (Spring Initializr)
-- [ ] Scaffold do front-end (Angular CLI)
-- [ ] Autenticação (login simples)
-- [ ] CRUD de Produto / Categoria
-- [ ] CRUD de Cliente
-- [ ] Fluxo de Venda (registro + baixa de estoque)
+- [x] Scaffold do back-end (Spring Initializr)
+- [x] Scaffold do front-end (Angular CLI)
+- [x] Autenticação (login com JWT)
+- [x] CRUD de Categoria / Produto
+- [x] CRUD de Cliente
+- [x] CRUD de Fornecedor
+- [x] Fluxo de Venda (registro + baixa de estoque)
 - [ ] Coleção Postman documentada
-
-# Sistema-ERP-Deposito-de-Bebidas
-
-Sistema para gerenciar Depósito de Bebidas
-57699e3c92d8a80fc9bc38a62ed80f36d80f2f85
+- [ ] Migrations (Flyway) para produção
+- [ ] Perfis de acesso (admin vs. vendedor)
