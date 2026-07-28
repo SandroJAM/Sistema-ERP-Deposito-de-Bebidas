@@ -29,7 +29,9 @@
             <td>{{ cliente.telefone || '—' }}</td>
             <td class="acoes-linha">
               <button type="button" class="botao-secundario" (click)="abrirEdicao(cliente)">Editar</button>
-              <button type="button" class="botao-perigo" (click)="excluir(cliente)">Excluir</button>
+              @if (authService.ehAdmin()) {
+                <button type="button" class="botao-perigo" (click)="excluir(cliente)">Excluir</button>
+              }
             </td>
           </tr>
         }

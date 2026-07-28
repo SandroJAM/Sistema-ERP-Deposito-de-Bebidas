@@ -1,0 +1,100 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Usuários</h1>
+    <p>Gestão de acesso ao sistema — restrita ao perfil administrador.</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNovo()">+ Novo usuário</button>
+</header>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (usuarios().length === 0) {
+    <div class="estado-vazio">Nenhum usuário cadastrado ainda.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Perfil</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of usuarios(); track usuario.id) {
+          <tr>
+            <td>
+              {{ usuario.nome }}
+              @if (usuario.id === authService.usuarioLogado()?.id) {
+                <span class="selo selo--ativo">Você</span>
+              }
+            </td>
+            <td>{{ usuario.email }}</td>
+            <td>
+              <span class="selo" [class.selo--ativo]="usuario.perfil === 'ADMIN'">{{ usuario.perfil }}</span>
+            </td>
+            <td class="acoes-linha">
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(usuario)">Editar</button>
+              @if (usuario.id !== authService.usuarioLogado()?.id) {
+                <button type="button" class="botao-perigo" (click)="excluir(usuario)">Excluir</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="usuarioEmEdicao() ? 'Editar usuário' : 'Novo usuário'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: Maria Souza" autofocus />
+        @if (form.get('nome')?.invalid && form.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>E-mail</span>
+        <input type="email" formControlName="email" placeholder="Ex: maria@email.com" />
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <small class="form-erro">Informe um e-mail válido.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Perfil</span>
+        <select formControlName="perfil">
+          <option value="VENDEDOR">Vendedor — uso do dia a dia, sem excluir informações</option>
+          <option value="ADMIN">Administrador — acesso completo, inclusive excluir</option>
+        </select>
+      </label>
+
+      <label class="form-campo">
+        <span>{{ usuarioEmEdicao() ? 'Nova senha (opcional)' : 'Senha' }}</span>
+        <input
+          type="password"
+          formControlName="senha"
+          [placeholder]="usuarioEmEdicao() ? 'Deixe em branco para manter a atual' : 'Defina uma senha'"
+        />
+      </label>
+
+      @if (erroSalvar()) {
+        <div class="alerta">{{ erroSalvar() }}</div>
+      }
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

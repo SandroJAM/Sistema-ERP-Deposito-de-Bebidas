@@ -14,9 +14,8 @@ public class UsuarioDTO {
     @Email
     private String email;
 
-    // TODO: quando implementarmos autenticação, isso deixa de ser texto puro
-    // e passa a ser um hash (BCrypt) gerado no service, nunca armazenado em claro.
-    @NotBlank
+    // Obrigatória ao criar um usuário; opcional ao editar (em branco mantém a senha atual).
+    // Sempre armazenada com hash (BCrypt), nunca em texto puro.
     private String senha;
 
     private String perfil;

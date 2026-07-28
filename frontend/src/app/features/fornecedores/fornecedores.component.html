@@ -39,7 +39,9 @@
             </td>
             <td class="acoes-linha">
               <button type="button" class="botao-secundario" (click)="abrirEdicao(fornecedor)">Editar</button>
-              <button type="button" class="botao-perigo" (click)="excluir(fornecedor)">Excluir</button>
+              @if (authService.ehAdmin()) {
+                <button type="button" class="botao-perigo" (click)="excluir(fornecedor)">Excluir</button>
+              }
             </td>
           </tr>
         }

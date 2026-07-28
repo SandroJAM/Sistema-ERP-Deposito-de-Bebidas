@@ -7,6 +7,7 @@ interface ItemMenu {
   rota: string;
   rotulo: string;
   icone: string;
+  somenteAdmin?: boolean;
 }
 
 interface GrupoMenu {
@@ -36,6 +37,12 @@ export class ShellComponent {
         { rota: '/categorias', rotulo: 'Categorias', icone: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z' },
         { rota: '/fornecedores', rotulo: 'Fornecedores', icone: 'M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6' },
         { rota: '/clientes', rotulo: 'Clientes', icone: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20a8 8 0 0 1 16 0' },
+        {
+          rota: '/usuarios',
+          rotulo: 'Usuários',
+          icone: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M21 21a6 6 0 0 0-4-5.65',
+          somenteAdmin: true,
+        },
       ],
     },
     {

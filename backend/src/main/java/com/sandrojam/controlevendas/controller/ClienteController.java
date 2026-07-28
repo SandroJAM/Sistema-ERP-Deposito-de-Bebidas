@@ -4,6 +4,7 @@ import com.sandrojam.controlevendas.dto.ClienteDTO;
 import com.sandrojam.controlevendas.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class ClienteController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void excluir(@PathVariable Long id) {
         clienteService.excluir(id);
     }

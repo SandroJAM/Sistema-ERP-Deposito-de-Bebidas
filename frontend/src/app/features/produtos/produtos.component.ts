@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
 import { ProdutoService } from '../../core/services/produto.service';
 import { CategoriaService } from '../../core/services/categoria.service';
 import { FornecedorService } from '../../core/services/fornecedor.service';
@@ -17,6 +18,7 @@ import { ModalComponent } from '../../shared/ui/modal/modal.component';
   templateUrl: './produtos.component.html',
 })
 export class ProdutosComponent implements OnInit {
+  authService = inject(AuthService);
   private produtoService = inject(ProdutoService);
   private categoriaService = inject(CategoriaService);
   private fornecedorService = inject(FornecedorService);

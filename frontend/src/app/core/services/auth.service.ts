@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
@@ -13,6 +13,9 @@ export class AuthService {
   // Signal com o usuário logado (ou null se não houver ninguém).
   // Componentes podem ler isso reativamente, ex: no template com usuarioLogado().
   usuarioLogado = signal<Omit<LoginResponse, 'token'> | null>(this.carregarUsuarioSalvo());
+
+  // Só o perfil ADMIN pode gerenciar usuários e excluir informações no sistema.
+  ehAdmin = computed(() => this.usuarioLogado()?.perfil === 'ADMIN');
 
   constructor(private http: HttpClient, private router: Router) {}
 

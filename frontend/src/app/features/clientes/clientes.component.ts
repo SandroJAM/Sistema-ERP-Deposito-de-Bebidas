@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteService } from '../../core/services/cliente.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Cliente } from '../../core/models/cliente.model';
 import { ModalComponent } from '../../shared/ui/modal/modal.component';
 
@@ -12,6 +13,7 @@ import { ModalComponent } from '../../shared/ui/modal/modal.component';
   templateUrl: './clientes.component.html',
 })
 export class ClientesComponent implements OnInit {
+  authService = inject(AuthService);
   private clienteService = inject(ClienteService);
   private fb = inject(FormBuilder);
 

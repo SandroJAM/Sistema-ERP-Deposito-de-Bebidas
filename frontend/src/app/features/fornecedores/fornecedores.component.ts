@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FornecedorService } from '../../core/services/fornecedor.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Fornecedor } from '../../core/models/fornecedor.model';
 import { ModalComponent } from '../../shared/ui/modal/modal.component';
 
@@ -12,6 +13,7 @@ import { ModalComponent } from '../../shared/ui/modal/modal.component';
   templateUrl: './fornecedores.component.html',
 })
 export class FornecedoresComponent implements OnInit {
+  authService = inject(AuthService);
   private fornecedorService = inject(FornecedorService);
   private fb = inject(FormBuilder);
 

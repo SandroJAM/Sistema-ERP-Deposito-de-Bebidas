@@ -34,6 +34,7 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String perfil = "VENDEDOR";
+    private PerfilUsuario perfil = PerfilUsuario.VENDEDOR;
 }

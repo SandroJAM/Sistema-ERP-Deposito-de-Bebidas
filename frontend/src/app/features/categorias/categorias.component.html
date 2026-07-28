@@ -27,7 +27,9 @@
             <td>{{ categoria.nome }}</td>
             <td class="acoes-linha">
               <button type="button" class="botao-secundario" (click)="abrirEdicao(categoria)">Editar</button>
-              <button type="button" class="botao-perigo" (click)="excluir(categoria)">Excluir</button>
+              @if (authService.ehAdmin()) {
+                <button type="button" class="botao-perigo" (click)="excluir(categoria)">Excluir</button>
+              }
             </td>
           </tr>
         }
