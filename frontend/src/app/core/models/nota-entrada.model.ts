@@ -15,7 +15,7 @@ export interface ItemNotaEntradaResultado {
 
 export interface PagamentoResultado {
   id: number;
-  notaEntradaId: number;
+  notaEntradaId: number | null;
   fornecedorId: number | null;
   fornecedorNome: string | null;
   numeroFatura: string;
@@ -23,7 +23,9 @@ export interface PagamentoResultado {
   dataEmissao: string;
   valorAPagar: number;
   dataVencimento: string;
+  descricao: string | null;
   status: 'PENDENTE' | 'PAGO' | 'CANCELADO';
+  origem: 'AVULSO' | 'NOTA_ENTRADA';
 }
 
 export interface NotaEntradaInput {
@@ -32,6 +34,7 @@ export interface NotaEntradaInput {
   dataNota: string;
   valorNota: number;
   vencimento: string;
+  numeroParcelas?: number;
   itens: ItemNotaEntradaInput[];
 }
 

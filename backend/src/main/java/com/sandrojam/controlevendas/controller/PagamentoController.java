@@ -3,7 +3,10 @@ package com.sandrojam.controlevendas.controller;
 import com.sandrojam.controlevendas.dto.PagamentoDTO;
 import com.sandrojam.controlevendas.model.StatusPagamento;
 import com.sandrojam.controlevendas.service.PagamentoService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -45,5 +48,27 @@ public class PagamentoController {
     @PostMapping("/{id}/marcar-pago")
     public PagamentoDTO marcarComoPago(@PathVariable Long id) {
         return pagamentoService.marcarComoPago(id);
+    }
+
+    /**
+     * Cria um pagamento. Envie notaEntradaId para vincular a uma nota existente
+     * (ex: dividir a parcela original em mais de uma) ou deixe nulo para um pagamento avulso.
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public PagamentoDTO criar(@Valid @RequestBody PagamentoDTO dto) {
+        return pagamentoService.criar(dto);
+    }
+
+    @PutMapping("/{id}")
+    public PagamentoDTO atualizar(@PathVariable Long id, @Valid @RequestBody PagamentoDTO dto) {
+        return pagamentoService.atualizar(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void excluir(@PathVariable Long id) {
+        pagamentoService.excluir(id);
     }
 }

@@ -14,8 +14,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Parcela a pagar, gerada a partir de uma NotaEntrada. Uma mesma nota pode ter
- * várias parcelas (mesmo numeroFatura, uma linha de Pagamento por parcela).
+ * Parcela a pagar. Pode ser gerada automaticamente a partir de uma NotaEntrada (uma mesma
+ * nota pode ter várias parcelas, mesmo numeroFatura, uma linha de Pagamento por parcela) ou
+ * lançada avulsa diretamente pelo usuário, sem nota de origem — nesse caso o fornecedor é
+ * vinculado diretamente ao pagamento.
  */
 @Entity
 @Table(name = "pagamento")
@@ -29,11 +31,21 @@ public class Pagamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Ausente quando o pagamento é avulso (lançado diretamente, sem nota de entrada).
     @JsonIgnore
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nota_entrada_id", nullable = false)
+    @JoinColumn(name = "nota_entrada_id")
     private NotaEntrada notaEntrada;
+
+    // Usado somente em pagamentos avulsos. Quando há notaEntrada, o fornecedor é o dela.
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
+
+    // Observação livre, útil principalmente em pagamentos avulsos (ex: "Aluguel do depósito").
+    @Column(name = "descricao")
+    private String descricao;
 
     // Igual ao número da NotaEntrada de origem. Repetido nas várias parcelas de uma mesma nota.
     @NotBlank

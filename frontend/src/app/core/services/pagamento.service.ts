@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Pagamento } from '../models/pagamento.model';
+import { Pagamento, PagamentoForm } from '../models/pagamento.model';
 
 export interface FiltrosPagamento {
   notaEntradaId?: number | null;
@@ -41,5 +41,17 @@ export class PagamentoService {
 
   marcarComoPago(id: number): Observable<Pagamento> {
     return this.http.post<Pagamento>(`${this.url}/${id}/marcar-pago`, {});
+  }
+
+  criar(dados: PagamentoForm): Observable<Pagamento> {
+    return this.http.post<Pagamento>(this.url, dados);
+  }
+
+  atualizar(id: number, dados: PagamentoForm): Observable<Pagamento> {
+    return this.http.put<Pagamento>(`${this.url}/${id}`, dados);
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
   }
 }

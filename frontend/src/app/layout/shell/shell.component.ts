@@ -50,6 +50,7 @@ export class ShellComponent {
       itens: [
         { rota: '/notas-entrada', rotulo: 'Notas de Entrada', icone: 'M9 3h6l3 3v15H6V6zM9 3v4h6M9 12h6M9 16h4' },
         { rota: '/vendas', rotulo: 'Vendas', icone: 'M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6' },
+        { rota: '/pagamentos', rotulo: 'Pagamentos', icone: 'M3 6h18v12H3zM3 10h18M7 15h4' },
       ],
     },
     {

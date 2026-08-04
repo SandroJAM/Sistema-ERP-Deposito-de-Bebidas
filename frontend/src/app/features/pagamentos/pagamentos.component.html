@@ -1,0 +1,200 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Pagamentos</h1>
+    <p>Parcelas a pagar, avulsas ou geradas automaticamente pelas notas de entrada.</p>
+  </div>
+  <button type="button" class="botao-primario" (click)="abrirNovo()">+ Novo pagamento</button>
+</header>
+
+<div class="painel">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Fornecedor</span>
+      <select [ngModel]="fornecedorSelecionadoId()" (ngModelChange)="fornecedorSelecionadoId.set($event); aoMudarFiltro()">
+        <option [ngValue]="null">Todos</option>
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+          <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Status</span>
+      <select [ngModel]="statusSelecionado()" (ngModelChange)="statusSelecionado.set($event); aoMudarFiltro()">
+        <option [ngValue]="null">Todos</option>
+        <option value="PENDENTE">Pendente</option>
+        <option value="PAGO">Pago</option>
+        <option value="CANCELADO">Cancelado</option>
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Vencimento de</span>
+      <input type="date" [ngModel]="vencimentoDe()" (ngModelChange)="vencimentoDe.set($event || null); aoMudarFiltro()" />
+    </label>
+
+    <label class="form-campo">
+      <span>Vencimento até</span>
+      <input type="date" [ngModel]="vencimentoAte()" (ngModelChange)="vencimentoAte.set($event || null); aoMudarFiltro()" />
+    </label>
+  </div>
+
+  <div class="form-acoes">
+    <button type="button" class="botao-secundario" (click)="limparFiltros()">Limpar filtros</button>
+  </div>
+</div>
+
+<div class="painel">
+  @if (carregando()) {
+    <div class="estado-vazio">Carregando...</div>
+  } @else if (erro()) {
+    <div class="estado-vazio">{{ erro() }}</div>
+  } @else if (pagamentos().length === 0) {
+    <div class="estado-vazio">Nenhum pagamento encontrado. Lance um pagamento avulso acima ou registre uma nota de entrada.</div>
+  } @else {
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Origem</th>
+          <th>Fatura</th>
+          <th class="numero">Parcela</th>
+          <th>Fornecedor</th>
+          <th>Descrição</th>
+          <th>Emissão</th>
+          <th>Vencimento</th>
+          <th class="numero">Valor</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pagamento of pagamentos(); track pagamento.id) {
+          <tr>
+            <td>
+              @if (pagamento.origem === 'NOTA_ENTRADA') {
+                <span class="selo selo--inativo">Nota #{{ pagamento.notaEntradaId }}</span>
+              } @else {
+                <span class="selo selo--ativo">Avulso</span>
+              }
+            </td>
+            <td>{{ pagamento.numeroFatura }}</td>
+            <td class="numero">{{ pagamento.numeroParcela }}</td>
+            <td>{{ pagamento.fornecedorNome ?? '—' }}</td>
+            <td>{{ pagamento.descricao ?? '—' }}</td>
+            <td>{{ pagamento.dataEmissao | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ pagamento.dataVencimento | date: 'dd/MM/yyyy' }}</td>
+            <td class="numero">R$ {{ pagamento.valorAPagar | number: '1.2-2' }}</td>
+            <td>
+              <span
+                class="selo"
+                [class.selo--ativo]="pagamento.status === 'PAGO'"
+                [class.selo--inativo]="pagamento.status !== 'PAGO'"
+              >
+                {{ pagamento.status }}
+              </span>
+            </td>
+            <td class="acoes-linha">
+              @if (pagamento.status === 'PENDENTE') {
+                <button type="button" class="botao-secundario" (click)="marcarComoPago(pagamento)">Marcar pago</button>
+              }
+              <button type="button" class="botao-secundario" (click)="abrirEdicao(pagamento)">Editar</button>
+              @if (authService.ehAdmin()) {
+                <button type="button" class="botao-perigo" (click)="excluir(pagamento)">Excluir</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (modalAberto()) {
+  <app-modal [titulo]="pagamentoEmEdicao() ? 'Editar pagamento' : 'Novo pagamento avulso'" (fechar)="fecharModal()">
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      @if (!ehAvulsoOuNovo) {
+        <span class="form-dica">
+          Pagamento gerado pela nota #{{ pagamentoEmEdicao()?.notaEntradaId }} — o fornecedor é o da nota e não pode ser trocado aqui.
+        </span>
+      }
+
+      <label class="form-campo">
+        <span>Fornecedor</span>
+        <select formControlName="fornecedorId">
+          <option [ngValue]="null" disabled>Selecione...</option>
+          @for (fornecedor of fornecedores(); track fornecedor.id) {
+            <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+          }
+        </select>
+        @if (form.get('fornecedorId')?.invalid && form.get('fornecedorId')?.touched) {
+          <small class="form-erro">Selecione um fornecedor.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Nº da fatura</span>
+        <input type="text" formControlName="numeroFatura" placeholder="Ex: 12345 ou 'Aluguel-08/2026'" autofocus />
+        @if (form.get('numeroFatura')?.invalid && form.get('numeroFatura')?.touched) {
+          <small class="form-erro">Informe o número da fatura.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Descrição (opcional)</span>
+        <input type="text" formControlName="descricao" placeholder="Ex: Aluguel do depósito" />
+      </label>
+
+      <label class="form-campo">
+        <span>Parcela</span>
+        <input type="number" formControlName="numeroParcela" min="1" step="1" />
+        @if (form.get('numeroParcela')?.invalid && form.get('numeroParcela')?.touched) {
+          <small class="form-erro">Informe um número de parcela válido.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Valor a pagar (R$)</span>
+        <input type="number" formControlName="valorAPagar" min="0.01" step="0.01" />
+        @if (form.get('valorAPagar')?.invalid && form.get('valorAPagar')?.touched) {
+          <small class="form-erro">Informe um valor maior que zero.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Data de emissão</span>
+        <input type="date" formControlName="dataEmissao" />
+        @if (form.get('dataEmissao')?.invalid && form.get('dataEmissao')?.touched) {
+          <small class="form-erro">Informe a data de emissão.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Vencimento</span>
+        <input type="date" formControlName="dataVencimento" />
+        @if (form.get('dataVencimento')?.invalid && form.get('dataVencimento')?.touched) {
+          <small class="form-erro">Informe a data de vencimento.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Status</span>
+        <select formControlName="status">
+          <option value="PENDENTE">Pendente</option>
+          <option value="PAGO">Pago</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </label>
+
+      @if (erroSalvar()) {
+        <div class="alerta">{{ erroSalvar() }}</div>
+      }
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

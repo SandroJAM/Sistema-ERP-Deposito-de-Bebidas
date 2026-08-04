@@ -10,6 +10,7 @@ import { ClientesComponent } from './features/clientes/clientes.component';
 import { VendasComponent } from './features/vendas/vendas.component';
 import { FornecedoresComponent } from './features/fornecedores/fornecedores.component';
 import { NotasEntradaComponent } from './features/notas-entrada/notas-entrada.component';
+import { PagamentosComponent } from './features/pagamentos/pagamentos.component';
 import { UsuariosComponent } from './features/usuarios/usuarios.component';
 import { ConsultaNotasEntradaComponent } from './features/consultas/consulta-notas-entrada/consulta-notas-entrada.component';
 import { ConsultaVendasComponent } from './features/consultas/consulta-vendas/consulta-vendas.component';
@@ -32,6 +33,7 @@ export const routes: Routes = [
       // Movimentação
       { path: 'notas-entrada', component: NotasEntradaComponent },
       { path: 'vendas', component: VendasComponent },
+      { path: 'pagamentos', component: PagamentosComponent },
       // Consultas
       { path: 'consultas/notas-entrada', component: ConsultaNotasEntradaComponent },
       { path: 'consultas/vendas', component: ConsultaVendasComponent },
