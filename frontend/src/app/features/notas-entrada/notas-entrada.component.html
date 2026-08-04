@@ -1,7 +1,7 @@
 <header class="cabecalho-pagina">
   <div>
     <h1>Notas de Entrada</h1>
-    <p>Registre a nota do fornecedor — o estoque é somado e o pagamento é gerado automaticamente ao confirmar.</p>
+    <p>Registre a nota do fornecedor — o estoque é somado e o(s) pagamento(s) são gerados automaticamente ao confirmar.</p>
   </div>
 </header>
 
@@ -43,7 +43,43 @@
         (keydown.enter)="campoBusca.focus()"
       />
     </label>
+
+    <label class="form-campo">
+      <span>Número de parcelas</span>
+      <input
+        type="number"
+        min="1"
+        step="1"
+        [ngModel]="numeroParcelas()"
+        (ngModelChange)="aoMudarNumeroParcelas($event)"
+      />
+      <small class="form-dica">1 = à vista. Mais de 1: vencimentos a cada 30 dias a partir do vencimento acima.</small>
+    </label>
   </div>
+
+  @if (valorNota() && numeroParcelas() > 1) {
+    <div class="painel">
+      <span class="form-dica">Prévia das parcelas (o cálculo final acontece ao salvar):</span>
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th class="numero">Parcela</th>
+            <th>Vencimento</th>
+            <th class="numero">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (parcela of previewParcelas(); track parcela.numero) {
+            <tr>
+              <td class="numero">{{ parcela.numero }}</td>
+              <td>{{ parcela.vencimento | date: 'dd/MM/yyyy' }}</td>
+              <td class="numero">R$ {{ parcela.valor | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 
   <div class="busca-produto">
     <label class="form-campo">

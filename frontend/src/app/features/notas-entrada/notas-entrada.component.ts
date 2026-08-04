@@ -41,6 +41,22 @@ export class NotasEntradaComponent implements OnInit, OnDestroy {
   dataNota = signal(hoje());
   vencimento = signal(hoje());
   valorNota = signal<number | null>(null);
+  numeroParcelas = signal(1);
+
+  /** Prévia informativa das parcelas — o cálculo final e autoritativo acontece no backend. */
+  previewParcelas = computed(() => {
+    const n = Math.max(1, Math.floor(this.numeroParcelas() || 1));
+    const valor = this.valorNota() ?? 0;
+    const base = Math.floor((valor / n) * 100) / 100;
+    const ultima = arredondar(valor - base * (n - 1));
+    const vencimentoBase = this.vencimento();
+
+    return Array.from({ length: n }, (_, i) => ({
+      numero: i + 1,
+      valor: i < n - 1 ? base : ultima,
+      vencimento: this.somarDias(vencimentoBase, i * 30),
+    }));
+  });
 
   termoBusca = signal('');
   sugestoes = signal<Produto[]>([]);
@@ -137,6 +153,11 @@ export class NotasEntradaComponent implements OnInit, OnDestroy {
     this.valorNota.set(this.somaItens());
   }
 
+  aoMudarNumeroParcelas(valor: number): void {
+    const inteiro = Math.max(1, Math.floor(Number(valor) || 1));
+    this.numeroParcelas.set(inteiro);
+  }
+
   registrarNota(): void {
     if (!this.numero().trim() || !this.dataNota() || !this.vencimento() || this.itens().length === 0) {
       return;
@@ -160,6 +181,7 @@ export class NotasEntradaComponent implements OnInit, OnDestroy {
         dataNota: this.dataNota(),
         valorNota: this.valorNota()!,
         vencimento: this.vencimento(),
+        numeroParcelas: Math.max(1, Math.floor(this.numeroParcelas() || 1)),
         itens: this.itens().map((item) => ({
           produtoId: item.produto.id,
           quantidade: item.quantidade,
@@ -169,8 +191,13 @@ export class NotasEntradaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (nota) => {
           this.salvando.set(false);
+          const qtdParcelas = nota.pagamentos.length;
+          const resumoParcelas =
+            qtdParcelas > 1
+              ? `${qtdParcelas} parcelas geradas, a 1ª vencendo em ${this.formatarData(nota.vencimento)}`
+              : `pagamento gerado com vencimento em ${this.formatarData(nota.vencimento)}`;
           this.sucesso.set(
-            `Nota #${nota.numero} registrada — estoque atualizado e pagamento gerado com vencimento em ${this.formatarData(nota.vencimento)}. Confira em Consultas > Notas de Entrada.`
+            `Nota #${nota.numero} registrada — estoque atualizado e ${resumoParcelas}. Confira em Consultas > Notas de Entrada.`
           );
           this.limparFormulario();
         },
@@ -191,11 +218,18 @@ export class NotasEntradaComponent implements OnInit, OnDestroy {
     this.dataNota.set(hoje());
     this.vencimento.set(hoje());
     this.valorNota.set(null);
+    this.numeroParcelas.set(1);
     this.itens.set([]);
   }
 
   private formatarData(iso: string): string {
     const [ano, mes, dia] = iso.split('-');
     return `${dia}/${mes}/${ano}`;
+  }
+
+  private somarDias(dataIso: string, dias: number): string {
+    const data = new Date(`${dataIso}T00:00:00`);
+    data.setDate(data.getDate() + dias);
+    return data.toISOString().slice(0, 10);
   }
 }

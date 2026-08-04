@@ -4,6 +4,7 @@ import com.sandrojam.controlevendas.dto.ItemNotaEntradaDTO;
 import com.sandrojam.controlevendas.dto.NotaEntradaDTO;
 import com.sandrojam.controlevendas.dto.PagamentoDTO;
 import com.sandrojam.controlevendas.exception.DivergenciaValorNotaException;
+import com.sandrojam.controlevendas.exception.RegraNegocioException;
 import com.sandrojam.controlevendas.exception.ResourceNotFoundException;
 import com.sandrojam.controlevendas.model.*;
 import com.sandrojam.controlevendas.repository.FornecedorRepository;
@@ -48,7 +49,8 @@ public class NotaEntradaService {
     /**
      * Cria a nota de entrada, valida que a soma dos itens bate exatamente com o valor
      * informado da nota, alimenta o estoque de cada produto envolvido e gera automaticamente
-     * o pagamento (à vista, com vencimento da nota) associado.
+     * o(s) pagamento(s) associado(s) — uma parcela única por padrão, ou várias, conforme
+     * dto.numeroParcelas (ver gerarParcelas).
      */
     public NotaEntradaDTO criar(NotaEntradaDTO dto) {
         Fornecedor fornecedor = null;
@@ -86,18 +88,44 @@ public class NotaEntradaService {
 
         validarSomaItensIgualAoValorDaNota(somaItens, dto.getValorNota());
 
-        // Por padrão, a nota gera um único pagamento à vista com o vencimento informado na nota.
-        // O usuário pode, posteriormente, editar essa parcela ou dividi-la em mais de uma.
-        Pagamento pagamento = new Pagamento();
-        pagamento.setNumeroFatura(nota.getNumero());
-        pagamento.setNumeroParcela(1);
-        pagamento.setDataEmissao(nota.getDataNota());
-        pagamento.setValorAPagar(nota.getValorNota());
-        pagamento.setDataVencimento(nota.getVencimento());
-        pagamento.setStatus(StatusPagamento.PENDENTE);
-        nota.adicionarPagamento(pagamento);
+        // Gera as parcelas do pagamento: uma única (à vista) por padrão, ou várias, uma a cada
+        // 30 dias a partir do vencimento informado, dividindo o valor da nota entre elas.
+        gerarParcelas(nota, dto.getNumeroParcelas());
 
         return toDTO(notaEntradaRepository.save(nota));
+    }
+
+    /**
+     * Divide o valor da nota em parcelas iguais (a última absorve o resto de centavos do
+     * arredondamento, para que a soma bata exatamente com o valor da nota) e as associa à nota,
+     * com vencimentos espaçados em 30 dias a partir do vencimento informado.
+     */
+    private void gerarParcelas(NotaEntrada nota, Integer numeroParcelasInformado) {
+        int numeroParcelas = numeroParcelasInformado != null ? numeroParcelasInformado : 1;
+        if (numeroParcelas < 1) {
+            throw new RegraNegocioException("O número de parcelas deve ser 1 ou mais.");
+        }
+
+        BigDecimal valorNota = nota.getValorNota().setScale(ESCALA_VALOR, RoundingMode.HALF_EVEN);
+        // Arredonda para baixo a parcela-base, garantindo que numeroParcelas-1 parcelas iguais nunca
+        // somem mais que o valor da nota; a última parcela recebe o restante exato.
+        BigDecimal valorParcelaBase = valorNota.divide(BigDecimal.valueOf(numeroParcelas), ESCALA_VALOR, RoundingMode.DOWN);
+        if (numeroParcelas > 1 && valorParcelaBase.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RegraNegocioException("O valor da nota é baixo demais para ser dividido em " + numeroParcelas + " parcelas.");
+        }
+        BigDecimal somaParcelasBase = valorParcelaBase.multiply(BigDecimal.valueOf(numeroParcelas - 1));
+        BigDecimal valorUltimaParcela = valorNota.subtract(somaParcelasBase);
+
+        for (int i = 1; i <= numeroParcelas; i++) {
+            Pagamento pagamento = new Pagamento();
+            pagamento.setNumeroFatura(nota.getNumero());
+            pagamento.setNumeroParcela(i);
+            pagamento.setDataEmissao(nota.getDataNota());
+            pagamento.setValorAPagar(i < numeroParcelas ? valorParcelaBase : valorUltimaParcela);
+            pagamento.setDataVencimento(nota.getVencimento().plusDays(30L * (i - 1)));
+            pagamento.setStatus(StatusPagamento.PENDENTE);
+            nota.adicionarPagamento(pagamento);
+        }
     }
 
     /**
@@ -171,15 +199,21 @@ public class NotaEntradaService {
     }
 
     private PagamentoDTO toPagamentoDTO(Pagamento pagamento) {
+        Fornecedor fornecedor = pagamento.getNotaEntrada().getFornecedor();
+
         PagamentoDTO dto = new PagamentoDTO();
         dto.setId(pagamento.getId());
         dto.setNotaEntradaId(pagamento.getNotaEntrada().getId());
+        dto.setFornecedorId(fornecedor != null ? fornecedor.getId() : null);
+        dto.setFornecedorNome(fornecedor != null ? fornecedor.getNome() : null);
         dto.setNumeroFatura(pagamento.getNumeroFatura());
         dto.setNumeroParcela(pagamento.getNumeroParcela());
         dto.setDataEmissao(pagamento.getDataEmissao());
         dto.setValorAPagar(pagamento.getValorAPagar());
         dto.setDataVencimento(pagamento.getDataVencimento());
+        dto.setDescricao(pagamento.getDescricao());
         dto.setStatus(pagamento.getStatus().name());
+        dto.setOrigem("NOTA_ENTRADA");
         return dto;
     }
 }

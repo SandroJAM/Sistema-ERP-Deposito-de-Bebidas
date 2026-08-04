@@ -30,6 +30,11 @@ public class NotaEntradaDTO {
     @NotNull
     private LocalDate vencimento;
 
+    // Quantas parcelas o pagamento da nota deve gerar. Nulo ou 1 = pagamento único.
+    // As demais parcelas vencem a cada 30 dias a partir de "vencimento", e o valor da nota
+    // é dividido igualmente entre elas (a última absorve o resto de centavos do arredondamento).
+    private Integer numeroParcelas;
+
     private String status;
 
     @NotEmpty
@@ -92,6 +97,14 @@ public class NotaEntradaDTO {
 
     public void setVencimento(LocalDate vencimento) {
         this.vencimento = vencimento;
+    }
+
+    public Integer getNumeroParcelas() {
+        return numeroParcelas;
+    }
+
+    public void setNumeroParcelas(Integer numeroParcelas) {
+        this.numeroParcelas = numeroParcelas;
     }
 
     public String getStatus() {
