@@ -24,6 +24,12 @@ public class VendaDTO {
 
     private BigDecimal valorTotal;
 
+    private String statusPagamento;
+
+    private BigDecimal valorPago;
+
+    private BigDecimal valorDevido;
+
     @NotEmpty
     @Valid
     private List<ItemVendaDTO> itens;
@@ -82,5 +88,29 @@ public class VendaDTO {
 
     public void setItens(List<ItemVendaDTO> itens) {
         this.itens = itens;
+    }
+
+    public String getStatusPagamento() {
+        return statusPagamento;
+    }
+
+    public void setStatusPagamento(String statusPagamento) {
+        this.statusPagamento = statusPagamento;
+    }
+
+    public BigDecimal getValorPago() {
+        return valorPago;
+    }
+
+    public void setValorPago(BigDecimal valorPago) {
+        this.valorPago = valorPago;
+    }
+
+    public BigDecimal getValorDevido() {
+        return valorDevido;
+    }
+
+    public void setValorDevido(BigDecimal valorDevido) {
+        this.valorDevido = valorDevido;
     }
 }

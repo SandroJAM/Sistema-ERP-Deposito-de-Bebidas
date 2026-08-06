@@ -60,14 +60,38 @@ Opcional em cada venda.
 
 ### Venda
 
-| Campo        | Tipo |
-|--------------|------|
-| id           | Long (PK) |
-| usuario_id   | Long (FK → Usuario) |
-| cliente_id   | Long (FK → Cliente, opcional) |
-| data_venda   | DateTime |
-| status       | String |
-| valor_total  | Decimal |
+| Campo             | Tipo |
+|-------------------|------|
+| id                | Long (PK) |
+| usuario_id        | Long (FK → Usuario) |
+| cliente_id        | Long (FK → Cliente, opcional) |
+| data_venda        | DateTime |
+| status            | String (`ABERTA`, `FINALIZADA`, `CANCELADA`) |
+| valor_total       | Decimal |
+| status_pagamento  | String (`PENDENTE`, `PARCIAL`, `PAGO`) |
+
+> `status` é o ciclo de vida da venda em si; `status_pagamento` é a situação de quitação perante o cliente — independente e calculado a partir da soma dos `RecebimentoVenda`. Toda venda finalizada nasce `PENDENTE`.
+
+### RecebimentoVenda
+Baixa (total ou parcial) de uma venda feita a um cliente — o equivalente, do lado do recebimento, ao `Pagamento` do lado do fornecedor.
+
+| Campo             | Tipo |
+|-------------------|------|
+| id                | Long (PK) |
+| venda_id          | Long (FK → Venda) |
+| data_recebimento  | Date |
+| valor             | Decimal |
+| observacao        | String (opcional) |
+
+### Empresa
+Dados cadastrais do próprio depósito — pensado pra ter um único registro. Nome/endereço/telefone aparecem no topo de todas as telas e no cabeçalho do histórico/PDF de vendas.
+
+| Campo     | Tipo |
+|-----------|------|
+| id        | Long (PK) |
+| nome      | String (obrigatório) |
+| endereco  | String (opcional) |
+| telefone  | String (opcional) |
 
 ### ItemVenda
 
@@ -129,6 +153,7 @@ Parcela a pagar, gerada automaticamente ao inserir uma `NotaEntrada`.
 - Um `Fornecedor` pode emitir várias `NotaEntrada` (vínculo opcional).
 - Uma `NotaEntrada` contém vários `ItemNotaEntrada` e gera um ou mais `Pagamento`.
 - Um `Produto` pode aparecer em vários `ItemNotaEntrada`.
+- Uma `Venda` pode receber vários `RecebimentoVenda` (baixas parciais) até ficar quitada.
 
 ## Regras de negócio iniciais
 
@@ -139,6 +164,9 @@ Parcela a pagar, gerada automaticamente ao inserir uma `NotaEntrada`.
 5. A soma dos `subtotal` de todos os `ItemNotaEntrada` deve ser exatamente igual a `valor_nota`; havendo divergência, a nota é rejeitada e nada é gravado.
 6. Ao inserir uma `NotaEntrada`, é gerado automaticamente 1 `Pagamento` à vista (`numero_parcela = 1`), com `valor_a_pagar = valor_nota` e `data_vencimento = vencimento` da nota. O usuário pode posteriormente editar essa parcela ou dividi-la em mais de uma — o modelo já suporta múltiplos `Pagamento` com o mesmo `numero_fatura`.
 7. Ao cancelar uma `NotaEntrada`, o estoque de cada produto é revertido e **todas** as parcelas de `Pagamento` são marcadas como `CANCELADO` — inclusive as que já estavam `PAGO`.
+8. Um `RecebimentoVenda` não pode ultrapassar o saldo devedor da `Venda` (`valor_total` − soma dos recebimentos já lançados), nem ser lançado em venda `CANCELADA`.
+9. `status_pagamento` da `Venda` é recalculado a cada `RecebimentoVenda`: `PENDENTE` (nada recebido), `PARCIAL` (recebido &lt; total) ou `PAGO` (recebido ≥ total).
+10. Venda `CANCELADA` tem saldo devedor sempre zero, independentemente de `status_pagamento`.
 
 ## Evoluções futuras (não implementadas na v1)
 

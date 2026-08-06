@@ -51,6 +51,21 @@
   </aside>
 
   <main class="conteudo">
+    @if (empresa(); as dadosEmpresa) {
+      <div class="faixa-empresa">
+        <strong>{{ dadosEmpresa.nome }}</strong>
+        @if (dadosEmpresa.endereco || dadosEmpresa.telefone) {
+          <div class="faixa-empresa__detalhes">
+            @if (dadosEmpresa.endereco) {
+              <span>{{ dadosEmpresa.endereco }}</span>
+            }
+            @if (dadosEmpresa.telefone) {
+              <span>{{ dadosEmpresa.telefone }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
     <router-outlet></router-outlet>
   </main>
 </div>

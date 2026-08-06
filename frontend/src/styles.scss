@@ -223,6 +223,11 @@ a {
   margin-top: 0.3rem;
   color: var(--cor-texto-suave);
   font-size: 0.75rem;
+
+  &--whatsapp {
+    margin-top: -0.6rem;
+    margin-bottom: 1.25rem;
+  }
 }
 
 .form-acoes {
@@ -371,6 +376,26 @@ a {
 .titulo-secao {
   font-size: 1.05rem;
   margin: 0 0 0.9rem;
+
+  &--espacada {
+    margin-top: 1.75rem;
+  }
+}
+
+.form-acoes--inicio {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+
+.botao-whatsapp {
+  border-color: rgba(37, 138, 91, 0.3);
+  color: #1f8a4c;
+
+  &:hover:not(:disabled) {
+    background: rgba(37, 138, 91, 0.08);
+  }
 }
 
 .alerta {
@@ -387,5 +412,131 @@ a {
     border-color: rgba(47, 125, 79, 0.25);
     color: var(--cor-sucesso);
   }
+}
+
+// ===== Bobina de extrato do cliente (Consulta de Vendas) =====
+// Visual de rolo de máquina de calcular: fonte monoespaçada, coluna estreita,
+// bordas serrilhadas simuladas com gradiente radial no topo e no rodapé.
+.bobina-container {
+  background: var(--cor-fundo);
+  padding: 1.5rem 1rem;
+}
+
+.bobina {
+  max-width: 340px;
+  margin: 0 auto;
+  background: var(--cor-superficie);
+  font-family: var(--fonte-dados);
+  font-size: 0.78rem;
+  padding: 0.25rem 1.1rem 1rem;
+  box-shadow: var(--sombra);
+  color: var(--cor-texto);
+
+  &::before,
+  &::after {
+    content: '';
+    display: block;
+    height: 12px;
+    background-image: radial-gradient(circle at 7px 6px, var(--cor-fundo) 6px, transparent 6.5px);
+    background-size: 14px 12px;
+    background-repeat: repeat-x;
+    background-position: left top;
+  }
+
+  &::before {
+    margin: 0 -1.1rem 0.6rem;
+  }
+
+  &::after {
+    margin: 0.6rem -1.1rem 0;
+  }
+}
+
+.bobina__empresa {
+  text-align: center;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--cor-borda);
+
+  strong {
+    display: block;
+    font-size: 0.82rem;
+  }
+
+  div {
+    color: var(--cor-texto-suave);
+    font-size: 0.64rem;
+    margin-top: 0.1rem;
+  }
+}
+
+.bobina__cabecalho {
+  text-align: center;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--cor-borda);
+
+  strong {
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  div {
+    color: var(--cor-texto-suave);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 0.15rem;
+  }
+}
+
+.bobina__lancamento {
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed var(--cor-borda);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.bobina__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  &--recebimento {
+    color: var(--cor-sucesso);
+  }
+}
+
+.bobina__saldo {
+  text-align: right;
+  font-size: 0.68rem;
+  color: var(--cor-texto-suave);
+  margin-top: 0.1rem;
+}
+
+.bobina__itens {
+  margin: 0.2rem 0 0.15rem;
+  padding-left: 0.6rem;
+}
+
+.bobina__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.68rem;
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.bobina__total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--cor-texto);
+  font-weight: 700;
+  font-size: 0.92rem;
 }
 

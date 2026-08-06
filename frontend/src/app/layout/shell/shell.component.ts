@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { EmpresaService } from '../../core/services/empresa.service';
+import { Empresa } from '../../core/models/empresa.model';
 
 interface ItemMenu {
   rota: string;
@@ -22,7 +24,11 @@ interface GrupoMenu {
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
+  private empresaService = inject(EmpresaService);
+
+  empresa = signal<Empresa | null>(null);
+
   itemInicio: ItemMenu = {
     rota: '/',
     rotulo: 'Início',
@@ -41,6 +47,12 @@ export class ShellComponent {
           rota: '/usuarios',
           rotulo: 'Usuários',
           icone: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M21 21a6 6 0 0 0-4-5.65',
+          somenteAdmin: true,
+        },
+        {
+          rota: '/empresa',
+          rotulo: 'Empresa',
+          icone: 'M4 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17M9 8h.01M9 12h.01M9 16h.01M15 21v-4h4v4M15 3h5v18',
           somenteAdmin: true,
         },
       ],
@@ -68,7 +80,7 @@ export class ShellComponent {
         },
         {
           rota: '/consultas/pagamentos',
-          rotulo: 'Pagamentos',
+          rotulo: 'Pagamentos Fornecedor',
           icone: 'M3 6h18v12H3zM3 10h18M7 15h4',
         },
       ],
@@ -76,6 +88,10 @@ export class ShellComponent {
   ];
 
   constructor(public authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.empresaService.buscarAtual().subscribe((empresa) => this.empresa.set(empresa));
+  }
 
   sair(): void {
     this.authService.logout();

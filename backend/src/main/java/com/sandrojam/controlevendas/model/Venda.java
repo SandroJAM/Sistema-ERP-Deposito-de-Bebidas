@@ -44,11 +44,35 @@ public class Venda {
     @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal = BigDecimal.ZERO;
 
+    // Situação de quitação perante o cliente — não confundir com "status" (ciclo de vida da venda).
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_pagamento", nullable = false)
+    private StatusPagamentoVenda statusPagamento = StatusPagamentoVenda.PENDENTE;
+
     @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVenda> itens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecebimentoVenda> recebimentos = new ArrayList<>();
 
     public void adicionarItem(ItemVenda item) {
         itens.add(item);
         item.setVenda(this);
+    }
+
+    /** Soma de tudo que já foi recebido para esta venda. */
+    public BigDecimal getValorPago() {
+        return recebimentos.stream()
+                .map(RecebimentoVenda::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** Quanto ainda falta o cliente pagar. Vendas canceladas não geram dívida. */
+    public BigDecimal getValorDevido() {
+        if (status == StatusVenda.CANCELADA) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal devido = valorTotal.subtract(getValorPago());
+        return devido.max(BigDecimal.ZERO);
     }
 }

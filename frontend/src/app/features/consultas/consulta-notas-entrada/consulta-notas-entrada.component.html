@@ -6,10 +6,59 @@
 </header>
 
 <div class="painel">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Número</span>
+      <input
+        type="text"
+        placeholder="Buscar por número..."
+        [ngModel]="numeroBusca()"
+        (ngModelChange)="numeroBusca.set($event)"
+      />
+    </label>
+
+    <label class="form-campo">
+      <span>Fornecedor</span>
+      <select [ngModel]="fornecedorSelecionadoId()" (ngModelChange)="fornecedorSelecionadoId.set($event)">
+        <option [ngValue]="null">Todos</option>
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+          <option [ngValue]="fornecedor.id">{{ fornecedor.nome }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Status</span>
+      <select [ngModel]="statusSelecionado()" (ngModelChange)="statusSelecionado.set($event)">
+        <option [ngValue]="null">Todos</option>
+        <option value="ATIVA">Ativa</option>
+        <option value="CANCELADA">Cancelada</option>
+      </select>
+    </label>
+
+    <label class="form-campo">
+      <span>Data de</span>
+      <input type="date" [ngModel]="dataDe()" (ngModelChange)="dataDe.set($event || null)" />
+    </label>
+
+    <label class="form-campo">
+      <span>Data até</span>
+      <input type="date" [ngModel]="dataAte()" (ngModelChange)="dataAte.set($event || null)" />
+    </label>
+  </div>
+
+  <div class="form-acoes">
+    <button type="button" class="botao-secundario" (click)="limparFiltros()">Limpar filtros</button>
+  </div>
+</div>
+
+<div class="painel">
   @if (carregando()) {
     <div class="estado-vazio">Carregando...</div>
   } @else if (notas().length === 0) {
     <div class="estado-vazio">Nenhuma nota de entrada registrada ainda.</div>
+  } @else if (notasFiltradas().length === 0) {
+    <div class="estado-vazio">Nenhuma nota encontrada para os filtros selecionados.</div>
   } @else {
     <table class="tabela">
       <thead>
@@ -24,7 +73,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (nota of notas(); track nota.id) {
+        @for (nota of notasFiltradas(); track nota.id) {
           <tr>
             <td>#{{ nota.numero }}</td>
             <td>{{ nota.fornecedorNome ?? '—' }}</td>
