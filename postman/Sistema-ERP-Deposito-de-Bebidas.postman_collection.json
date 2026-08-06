@@ -1,0 +1,580 @@
+{
+  "info": {
+    "name": "Sistema ERP - Depósito de Bebidas",
+    "description": "Coleção completa da API do Controle de Vendas / Depósito de Bebidas.\n\nComo usar:\n1. Rode a requisição 'Login' dentro da pasta Auth primeiro — ela salva o token JWT automaticamente na variável {{token}} (veja a aba Scripts > Post-response).\n2. Todas as demais requisições já usam Bearer {{token}} na aba Authorization, herdado da collection.\n3. Ajuste a variável {{baseUrl}} se o backend não estiver em localhost:8080 (ex: acessando por IP na rede local).\n4. As rotas marcadas com (admin) exigem um usuário com perfil ADMIN.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "token", "value": "" },
+    { "key": "clienteId", "value": "1" },
+    { "key": "produtoId", "value": "1" },
+    { "key": "categoriaId", "value": "1" },
+    { "key": "fornecedorId", "value": "1" },
+    { "key": "notaEntradaId", "value": "1" },
+    { "key": "pagamentoId", "value": "1" },
+    { "key": "vendaId", "value": "1" },
+    { "key": "usuarioId", "value": "1" },
+    { "key": "empresaId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const dados = pm.response.json();",
+                  "    pm.collectionVariables.set('token', dados.token);",
+                  "    console.log('Token salvo em {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@deposito.com\",\n  \"senha\": \"troque-esta-senha\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Autentica e devolve o token JWT. O script de teste salva o token em {{token}} automaticamente para as demais requisições."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empresa",
+      "item": [
+        {
+          "name": "Listar empresas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas", "host": ["{{baseUrl}}"], "path": ["empresas"] }
+          }
+        },
+        {
+          "name": "Empresa atual (cabeçalho das telas)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas/atual", "host": ["{{baseUrl}}"], "path": ["empresas", "atual"] },
+            "description": "204 sem corpo se ainda não houver nenhuma empresa cadastrada."
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas/{{empresaId}}", "host": ["{{baseUrl}}"], "path": ["empresas", "{{empresaId}}"] }
+          }
+        },
+        {
+          "name": "Cadastrar empresa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Depósito de Bebidas do Zé\",\n  \"endereco\": \"Rua das Flores, 123 - Recife/PE\",\n  \"telefone\": \"81 99999-0000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/empresas", "host": ["{{baseUrl}}"], "path": ["empresas"] },
+            "description": "Só permite um cadastro por vez — tentar criar um segundo retorna 400 (RegraNegocioException)."
+          }
+        },
+        {
+          "name": "Atualizar empresa",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Depósito de Bebidas do Zé\",\n  \"endereco\": \"Rua das Flores, 123 - Recife/PE\",\n  \"telefone\": \"81 99999-0000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/empresas/{{empresaId}}", "host": ["{{baseUrl}}"], "path": ["empresas", "{{empresaId}}"] }
+          }
+        },
+        {
+          "name": "Excluir empresa (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/empresas/{{empresaId}}", "host": ["{{baseUrl}}"], "path": ["empresas", "{{empresaId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorias",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categorias", "host": ["{{baseUrl}}"], "path": ["categorias"] }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["categorias", "{{categoriaId}}"] }
+          }
+        },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Cervejas\"\n}" },
+            "url": { "raw": "{{baseUrl}}/categorias", "host": ["{{baseUrl}}"], "path": ["categorias"] }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Cervejas\"\n}" },
+            "url": { "raw": "{{baseUrl}}/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["categorias", "{{categoriaId}}"] }
+          }
+        },
+        {
+          "name": "Excluir (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["categorias", "{{categoriaId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Produtos",
+      "item": [
+        {
+          "name": "Listar (com busca opcional por nome)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/produtos?nome=",
+              "host": ["{{baseUrl}}"],
+              "path": ["produtos"],
+              "query": [{ "key": "nome", "value": "", "description": "Filtro opcional por nome (ex: cerveja)" }]
+            }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/produtos/{{produtoId}}", "host": ["{{baseUrl}}"], "path": ["produtos", "{{produtoId}}"] }
+          }
+        },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cerveja Skol Lata 350ml\",\n  \"unidade\": \"UN\",\n  \"preco\": 4.50,\n  \"precoCusto\": 3.20,\n  \"estoqueAtual\": 100,\n  \"ativo\": true,\n  \"categoriaId\": {{categoriaId}},\n  \"fornecedorId\": {{fornecedorId}}\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/produtos", "host": ["{{baseUrl}}"], "path": ["produtos"] }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cerveja Skol Lata 350ml\",\n  \"unidade\": \"UN\",\n  \"preco\": 4.50,\n  \"precoCusto\": 3.20,\n  \"estoqueAtual\": 100,\n  \"ativo\": true,\n  \"categoriaId\": {{categoriaId}},\n  \"fornecedorId\": {{fornecedorId}}\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/produtos/{{produtoId}}", "host": ["{{baseUrl}}"], "path": ["produtos", "{{produtoId}}"] }
+          }
+        },
+        {
+          "name": "Excluir (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/produtos/{{produtoId}}", "host": ["{{baseUrl}}"], "path": ["produtos", "{{produtoId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/clientes", "host": ["{{baseUrl}}"], "path": ["clientes"] }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["clientes", "{{clienteId}}"] }
+          }
+        },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Sandro Muniz\",\n  \"telefone\": \"81 99876-5432\"\n}" },
+            "url": { "raw": "{{baseUrl}}/clientes", "host": ["{{baseUrl}}"], "path": ["clientes"] }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Sandro Muniz\",\n  \"telefone\": \"81 99876-5432\"\n}" },
+            "url": { "raw": "{{baseUrl}}/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["clientes", "{{clienteId}}"] }
+          }
+        },
+        {
+          "name": "Excluir (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/clientes/{{clienteId}}", "host": ["{{baseUrl}}"], "path": ["clientes", "{{clienteId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fornecedores",
+      "item": [
+        {
+          "name": "Listar (com busca opcional por nome)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/fornecedores?nome=",
+              "host": ["{{baseUrl}}"],
+              "path": ["fornecedores"],
+              "query": [{ "key": "nome", "value": "", "description": "Filtro opcional por nome" }]
+            }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["fornecedores", "{{fornecedorId}}"] }
+          }
+        },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Distribuidora Central Ltda\",\n  \"cnpjCpf\": \"12.345.678/0001-90\",\n  \"telefone\": \"81 3333-4444\",\n  \"email\": \"contato@distribuidoracentral.com\",\n  \"ativo\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/fornecedores", "host": ["{{baseUrl}}"], "path": ["fornecedores"] }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Distribuidora Central Ltda\",\n  \"cnpjCpf\": \"12.345.678/0001-90\",\n  \"telefone\": \"81 3333-4444\",\n  \"email\": \"contato@distribuidoracentral.com\",\n  \"ativo\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["fornecedores", "{{fornecedorId}}"] }
+          }
+        },
+        {
+          "name": "Excluir (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/fornecedores/{{fornecedorId}}", "host": ["{{baseUrl}}"], "path": ["fornecedores", "{{fornecedorId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notas de Entrada",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/notas-entrada", "host": ["{{baseUrl}}"], "path": ["notas-entrada"] }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/notas-entrada/{{notaEntradaId}}", "host": ["{{baseUrl}}"], "path": ["notas-entrada", "{{notaEntradaId}}"] }
+          }
+        },
+        {
+          "name": "Criar (gera pagamento automaticamente)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"NF-00123\",\n  \"fornecedorId\": {{fornecedorId}},\n  \"dataNota\": \"2026-08-01\",\n  \"valorNota\": 900.00,\n  \"vencimento\": \"2026-08-31\",\n  \"numeroParcelas\": 3,\n  \"itens\": [\n    {\n      \"produtoId\": {{produtoId}},\n      \"quantidade\": 200,\n      \"valorUnitario\": 4.50\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notas-entrada", "host": ["{{baseUrl}}"], "path": ["notas-entrada"] },
+            "description": "numeroParcelas > 1 divide o valor em parcelas mensais e gera um Pagamento pra cada uma."
+          }
+        },
+        {
+          "name": "Cancelar",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/notas-entrada/{{notaEntradaId}}/cancelar", "host": ["{{baseUrl}}"], "path": ["notas-entrada", "{{notaEntradaId}}", "cancelar"] },
+            "description": "Reverte o estoque dos itens e cancela todas as parcelas de pagamento, inclusive as já pagas."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagamentos Fornecedor",
+      "item": [
+        {
+          "name": "Listar (todos os filtros opcionais)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/pagamentos?notaEntradaId=&fornecedorId=&status=&vencimentoDe=&vencimentoAte=",
+              "host": ["{{baseUrl}}"],
+              "path": ["pagamentos"],
+              "query": [
+                { "key": "notaEntradaId", "value": "", "description": "Se informado, ignora os demais filtros" },
+                { "key": "fornecedorId", "value": "" },
+                { "key": "status", "value": "", "description": "PENDENTE, PAGO ou CANCELADO" },
+                { "key": "vencimentoDe", "value": "", "description": "yyyy-MM-dd" },
+                { "key": "vencimentoAte", "value": "", "description": "yyyy-MM-dd" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["pagamentos", "{{pagamentoId}}"] }
+          }
+        },
+        {
+          "name": "Marcar como pago",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/pagamentos/{{pagamentoId}}/marcar-pago", "host": ["{{baseUrl}}"], "path": ["pagamentos", "{{pagamentoId}}", "marcar-pago"] }
+          }
+        },
+        {
+          "name": "Criar avulso",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fornecedorId\": {{fornecedorId}},\n  \"numeroFatura\": \"AVULSO-001\",\n  \"numeroParcela\": 1,\n  \"dataEmissao\": \"2026-08-06\",\n  \"valorAPagar\": 150.00,\n  \"dataVencimento\": \"2026-09-05\",\n  \"descricao\": \"Frete extra\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pagamentos", "host": ["{{baseUrl}}"], "path": ["pagamentos"] },
+            "description": "Sem notaEntradaId — nesse caso fornecedorId é obrigatório."
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fornecedorId\": {{fornecedorId}},\n  \"numeroFatura\": \"AVULSO-001\",\n  \"numeroParcela\": 1,\n  \"dataEmissao\": \"2026-08-06\",\n  \"valorAPagar\": 150.00,\n  \"dataVencimento\": \"2026-09-05\",\n  \"descricao\": \"Frete extra\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["pagamentos", "{{pagamentoId}}"] }
+          }
+        },
+        {
+          "name": "Excluir (admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/pagamentos/{{pagamentoId}}", "host": ["{{baseUrl}}"], "path": ["pagamentos", "{{pagamentoId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendas",
+      "item": [
+        {
+          "name": "Listar todas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendas", "host": ["{{baseUrl}}"], "path": ["vendas"] }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendas/{{vendaId}}", "host": ["{{baseUrl}}"], "path": ["vendas", "{{vendaId}}"] }
+          }
+        },
+        {
+          "name": "Criar venda",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": {{usuarioId}},\n  \"clienteId\": {{clienteId}},\n  \"itens\": [\n    {\n      \"produtoId\": {{produtoId}},\n      \"quantidade\": 2\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/vendas", "host": ["{{baseUrl}}"], "path": ["vendas"] },
+            "description": "clienteId é opcional (venda de balcão). O preço unitário é sempre o atual do produto — não enviar precoUnitario. Baixa o estoque automaticamente; a venda nasce com statusPagamento=PENDENTE."
+          }
+        },
+        {
+          "name": "Cancelar venda",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/vendas/{{vendaId}}/cancelar", "host": ["{{baseUrl}}"], "path": ["vendas", "{{vendaId}}", "cancelar"] },
+            "description": "Devolve o estoque dos itens."
+          }
+        },
+        {
+          "name": "Clientes devedores (resumo)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendas/clientes/devedores", "host": ["{{baseUrl}}"], "path": ["vendas", "clientes", "devedores"] },
+            "description": "Um registro por cliente com saldo devedor > 0 — base da tela de Consulta de Vendas."
+          }
+        },
+        {
+          "name": "Extrato do cliente (bobina)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vendas/clientes/{{clienteId}}/extrato?somenteDevido=true&inicio=&fim=&statusPagamento=",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendas", "clientes", "{{clienteId}}", "extrato"],
+              "query": [
+                { "key": "somenteDevido", "value": "true", "description": "true = ignora período, traz só o que ainda deve" },
+                { "key": "inicio", "value": "", "description": "yyyy-MM-dd — só usado quando somenteDevido=false" },
+                { "key": "fim", "value": "", "description": "yyyy-MM-dd — só usado quando somenteDevido=false" },
+                { "key": "statusPagamento", "value": "", "description": "PENDENTE, PARCIAL ou PAGO (opcional)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Extrato do cliente em PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vendas/clientes/{{clienteId}}/extrato/pdf?somenteDevido=true&inicio=&fim=&statusPagamento=",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendas", "clientes", "{{clienteId}}", "extrato", "pdf"],
+              "query": [
+                { "key": "somenteDevido", "value": "true" },
+                { "key": "inicio", "value": "" },
+                { "key": "fim", "value": "" },
+                { "key": "statusPagamento", "value": "" }
+              ]
+            },
+            "description": "Mesmos filtros do extrato normal, mas devolve o arquivo PDF (bobina) pra download."
+          }
+        },
+        {
+          "name": "Listar recebimentos da venda",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendas/{{vendaId}}/recebimentos", "host": ["{{baseUrl}}"], "path": ["vendas", "{{vendaId}}", "recebimentos"] }
+          }
+        },
+        {
+          "name": "Registrar recebimento (baixa)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valor\": 20.00,\n  \"dataRecebimento\": \"2026-08-06\",\n  \"observacao\": \"Pix\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/vendas/{{vendaId}}/recebimentos", "host": ["{{baseUrl}}"], "path": ["vendas", "{{vendaId}}", "recebimentos"] },
+            "description": "Baixa total ou parcial. O valor não pode ultrapassar o saldo devedor da venda; dataRecebimento é opcional (default hoje)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuários (admin)",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Buscar por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] }
+          }
+        },
+        {
+          "name": "Criar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vendedor Teste\",\n  \"email\": \"vendedor@deposito.com\",\n  \"senha\": \"senha123\",\n  \"perfil\": \"USER\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vendedor Teste\",\n  \"email\": \"vendedor@deposito.com\",\n  \"senha\": \"\",\n  \"perfil\": \"USER\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] },
+            "description": "Deixe 'senha' em branco para manter a senha atual."
+          }
+        },
+        {
+          "name": "Excluir",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
