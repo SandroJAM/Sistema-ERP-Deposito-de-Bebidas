@@ -30,6 +30,13 @@ public class ProdutoDTO {
     @PositiveOrZero
     private Integer estoqueAtual;
 
+    @NotNull
+    @PositiveOrZero
+    private Integer estoqueMinimo;
+
+    // Somente leitura: true quando estoqueMinimo > 0 e estoqueAtual <= estoqueMinimo.
+    private Boolean estoqueBaixo;
+
     private Boolean ativo;
 
     @NotNull
@@ -82,6 +89,22 @@ public class ProdutoDTO {
 
     public void setEstoqueAtual(Integer estoqueAtual) {
         this.estoqueAtual = estoqueAtual;
+    }
+
+    public Integer getEstoqueMinimo() {
+        return estoqueMinimo;
+    }
+
+    public void setEstoqueMinimo(Integer estoqueMinimo) {
+        this.estoqueMinimo = estoqueMinimo;
+    }
+
+    public Boolean getEstoqueBaixo() {
+        return estoqueBaixo;
+    }
+
+    public void setEstoqueBaixo(Boolean estoqueBaixo) {
+        this.estoqueBaixo = estoqueBaixo;
     }
 
     public Boolean getAtivo() {

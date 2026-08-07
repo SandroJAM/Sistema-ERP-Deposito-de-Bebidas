@@ -42,6 +42,9 @@ public class PagamentoDTO {
 
     private String status;
 
+    // Somente leitura: preenchida automaticamente quando o pagamento é marcado como PAGO.
+    private LocalDate dataPagamento;
+
     // Somente leitura: "AVULSO" ou "NOTA_ENTRADA", derivado a partir de notaEntradaId.
     private String origem;
 
@@ -131,6 +134,14 @@ public class PagamentoDTO {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public LocalDate getDataPagamento() {
+        return dataPagamento;
+    }
+
+    public void setDataPagamento(LocalDate dataPagamento) {
+        this.dataPagamento = dataPagamento;
     }
 
     public String getOrigem() {

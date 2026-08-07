@@ -1,0 +1,96 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Dashboard de Vendas</h1>
+    <p>Faturamento, ticket médio e produtos mais vendidos no período.</p>
+  </div>
+</header>
+
+<div class="painel">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Período de</span>
+      <input type="date" [ngModel]="periodoInicio()" (ngModelChange)="periodoInicio.set($event || null)" />
+    </label>
+    <label class="form-campo">
+      <span>Período até</span>
+      <input type="date" [ngModel]="periodoFim()" (ngModelChange)="periodoFim.set($event || null)" />
+    </label>
+  </div>
+  <div class="form-acoes form-acoes--inicio">
+    <button type="button" class="botao-secundario" (click)="usarUltimos7Dias()">Últimos 7 dias</button>
+    <button type="button" class="botao-secundario" (click)="usarUltimos30Dias()">Últimos 30 dias</button>
+    <button type="button" class="botao-secundario" (click)="usarMesAtual()">Mês atual</button>
+    <button type="button" class="botao-primario" [disabled]="carregando()" (click)="aplicarPeriodo()">
+      Aplicar
+    </button>
+  </div>
+</div>
+
+@if (carregando()) {
+  <div class="painel"><div class="estado-vazio">Carregando...</div></div>
+} @else if (erro()) {
+  <div class="painel"><div class="estado-vazio">{{ erro() }}</div></div>
+} @else {
+  @if (dashboard(); as dados) {
+  <div class="grade-cartoes">
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Faturamento no período</span>
+      <strong class="cartao-indicador__valor">R$ {{ dados.faturamentoTotal | number: '1.2-2' }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Vendas</span>
+      <strong class="cartao-indicador__valor">{{ dados.quantidadeVendas }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Ticket médio</span>
+      <strong class="cartao-indicador__valor">R$ {{ dados.ticketMedio | number: '1.2-2' }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Itens vendidos</span>
+      <strong class="cartao-indicador__valor">{{ dados.totalItensVendidos }}</strong>
+    </div>
+  </div>
+
+  <h2 class="titulo-secao titulo-secao--espacada">Faturamento por dia</h2>
+  <div class="painel painel-grafico">
+    @if (dados.vendasPorDia.length === 0) {
+      <div class="estado-vazio">Nenhuma venda nesse período.</div>
+    } @else {
+      <div class="grafico-barras">
+        @for (dia of dados.vendasPorDia; track dia.data) {
+          <div class="grafico-barras__coluna" [title]="'R$ ' + (dia.valorTotal | number: '1.2-2')">
+            <div class="grafico-barras__barra" [style.height.%]="alturaBarra(dia.valorTotal)"></div>
+            <span class="grafico-barras__rotulo">{{ dia.data | date: 'dd/MM' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <h2 class="titulo-secao titulo-secao--espacada">Produtos mais vendidos</h2>
+  <div class="painel">
+    @if (dados.produtosMaisVendidos.length === 0) {
+      <div class="estado-vazio">Nenhum produto vendido nesse período.</div>
+    } @else {
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th class="numero">Quantidade</th>
+            <th class="numero">Faturamento</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (produto of dados.produtosMaisVendidos; track produto.produtoId) {
+            <tr>
+              <td>{{ produto.produtoNome }}</td>
+              <td class="numero">{{ produto.quantidadeVendida }}</td>
+              <td class="numero">R$ {{ produto.valorTotal | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+  }
+}

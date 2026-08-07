@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../../core/services/venda.service';
 import { ClienteDevedor, ExtratoCliente, StatusPagamentoVenda, Venda } from '../../../core/models/venda.model';
 import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { InputDinheiroDirective } from '../../../shared/directives/input-dinheiro.directive';
 
 @Component({
   selector: 'app-consulta-vendas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent],
+  imports: [CommonModule, FormsModule, ModalComponent, InputDinheiroDirective],
   templateUrl: './consulta-vendas.component.html',
 })
 export class ConsultaVendasComponent implements OnInit {
@@ -65,8 +66,8 @@ export class ConsultaVendasComponent implements OnInit {
     return this.todasVendas().filter((v) => v.clienteId === cliente.clienteId && v.valorDevido > 0);
   });
 
-  // ----- Form de recebimento (baixa) -----
-  vendaRecebimentoId = signal<number | null>(null);
+  // ----- Form de recebimento (baixa) — permite selecionar várias vendas em aberto de uma vez -----
+  vendasSelecionadasRecebimento = signal<Set<number>>(new Set());
   valorRecebimento = signal<number | null>(null);
   observacaoRecebimento = signal('');
   registrandoRecebimento = signal(false);
@@ -178,29 +179,89 @@ export class ConsultaVendasComponent implements OnInit {
   // ----- Recebimento (baixa) -----
 
   limparFormRecebimento(): void {
-    this.vendaRecebimentoId.set(null);
+    this.vendasSelecionadasRecebimento.set(new Set());
     this.valorRecebimento.set(null);
     this.observacaoRecebimento.set('');
   }
 
+  vendaEstaSelecionadaParaRecebimento(vendaId: number): boolean {
+    return this.vendasSelecionadasRecebimento().has(vendaId);
+  }
+
+  /**
+   * Marca/desmarca uma venda na lista de recebimento e já recalcula o "Valor recebido" somando
+   * o valorDevido de tudo que estiver marcado — o usuário ainda pode editar o valor depois,
+   * por exemplo pra registrar uma baixa parcial do total selecionado.
+   */
+  alternarSelecaoVenda(vendaId: number): void {
+    const selecionadas = new Set(this.vendasSelecionadasRecebimento());
+    if (selecionadas.has(vendaId)) {
+      selecionadas.delete(vendaId);
+    } else {
+      selecionadas.add(vendaId);
+    }
+    this.vendasSelecionadasRecebimento.set(selecionadas);
+
+    const total = this.vendasPendentesDoCliente()
+      .filter((v) => selecionadas.has(v.id))
+      .reduce((soma, v) => soma + v.valorDevido, 0);
+    this.valorRecebimento.set(total > 0 ? Math.round(total * 100) / 100 : null);
+  }
+
+  /**
+   * Registra o valor informado, quitando as vendas selecionadas na ordem (mais antiga primeiro).
+   * Se o valor digitado for menor que a soma das selecionadas, as últimas ficam parcialmente
+   * pagas (ou nem chegam a receber nada); o backend valida individualmente que nenhuma baixa
+   * ultrapasse o saldo devedor daquela venda.
+   */
   registrarRecebimento(): void {
-    const vendaId = this.vendaRecebimentoId();
-    const valor = this.valorRecebimento();
-    if (!vendaId || !valor || valor <= 0) {
+    const selecionadas = this.vendasSelecionadasRecebimento();
+    const valorInformado = this.valorRecebimento();
+    if (selecionadas.size === 0 || !valorInformado || valorInformado <= 0) {
+      return;
+    }
+
+    const vendasOrdenadas = this.vendasPendentesDoCliente()
+      .filter((v) => selecionadas.has(v.id))
+      .sort((a, b) => a.id - b.id);
+
+    let restante = valorInformado;
+    const lancamentos: { vendaId: number; valor: number }[] = [];
+    for (const venda of vendasOrdenadas) {
+      if (restante <= 0) {
+        break;
+      }
+      const valorAplicado = Math.min(restante, venda.valorDevido);
+      if (valorAplicado > 0) {
+        lancamentos.push({ vendaId: venda.id, valor: Math.round(valorAplicado * 100) / 100 });
+        restante -= valorAplicado;
+      }
+    }
+
+    if (lancamentos.length === 0) {
       return;
     }
 
     this.registrandoRecebimento.set(true);
+    this.registrarLancamentosEmSequencia(lancamentos, 0);
+  }
+
+  /** Registra um recebimento por vez (a API só aceita uma venda por chamada) e recarrega ao final. */
+  private registrarLancamentosEmSequencia(lancamentos: { vendaId: number; valor: number }[], indice: number): void {
+    if (indice >= lancamentos.length) {
+      this.registrandoRecebimento.set(false);
+      this.limparFormRecebimento();
+      this.carregarExtrato();
+      this.carregarVendas();
+      this.carregarDevedores();
+      return;
+    }
+
+    const lancamento = lancamentos[indice];
     this.vendaService
-      .registrarRecebimento(vendaId, { valor, observacao: this.observacaoRecebimento() || null })
+      .registrarRecebimento(lancamento.vendaId, { valor: lancamento.valor, observacao: this.observacaoRecebimento() || null })
       .subscribe({
-        next: () => {
-          this.registrandoRecebimento.set(false);
-          this.limparFormRecebimento();
-          this.carregarExtrato();
-          this.carregarVendas();
-          this.carregarDevedores();
-        },
+        next: () => this.registrarLancamentosEmSequencia(lancamentos, indice + 1),
         error: (err) => {
           this.registrandoRecebimento.set(false);
           alert(err?.error?.message ?? 'Não foi possível registrar o recebimento.');

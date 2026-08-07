@@ -5,6 +5,25 @@
   </div>
 </header>
 
+@if (produtosEstoqueBaixo().length > 0 && mostrarAlertaEstoque()) {
+  <div class="painel painel-alerta">
+    <div class="painel-alerta__cabecalho">
+      <strong>⚠ {{ produtosEstoqueBaixo().length }} produto(s) com estoque baixo</strong>
+      <button type="button" class="botao-secundario botao-secundario--pequeno" (click)="mostrarAlertaEstoque.set(false)">
+        Ocultar
+      </button>
+    </div>
+    <div class="painel-alerta__lista">
+      @for (produto of produtosEstoqueBaixo(); track produto.id) {
+        <span class="painel-alerta__item">
+          {{ produto.nome }} — {{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}
+          (mínimo: {{ produto.estoqueMinimo }})
+        </span>
+      }
+    </div>
+  </div>
+}
+
 <div class="busca-preco">
   <input
     type="text"

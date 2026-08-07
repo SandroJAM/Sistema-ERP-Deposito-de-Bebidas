@@ -122,6 +122,11 @@ a {
   transition: background 0.15s ease, border-color 0.15s ease;
 
   &:hover:not(:disabled) { background: var(--cor-fundo); }
+
+  &--pequeno {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
 }
 
 .botao-perigo {
@@ -141,6 +146,36 @@ a {
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio);
   overflow: hidden;
+}
+
+.painel-alerta {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  border-color: rgba(192, 57, 43, 0.35);
+  background: rgba(192, 57, 43, 0.05);
+
+  &__cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--cor-perigo);
+    margin-bottom: 0.6rem;
+  }
+
+  &__lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__item {
+    font-size: 0.8rem;
+    background: var(--cor-superficie);
+    border: 1px solid rgba(192, 57, 43, 0.25);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    color: var(--cor-texto);
+  }
 }
 
 .tabela {
@@ -191,6 +226,12 @@ a {
 
   &--ativo { background: rgba(47, 125, 79, 0.12); color: var(--cor-sucesso); }
   &--inativo { background: rgba(107, 114, 128, 0.12); color: var(--cor-texto-suave); }
+  &--alerta { background: rgba(192, 57, 43, 0.12); color: var(--cor-perigo); margin-left: 0.4rem; }
+}
+
+.texto-alerta {
+  color: var(--cor-perigo);
+  font-weight: 600;
 }
 
 .form-campo {
@@ -208,6 +249,41 @@ a {
     color: var(--cor-texto);
 
     &:focus { border-color: var(--cor-ambar); outline: none; }
+  }
+
+  // Faz o campo ocupar todas as colunas da grade-formulario — usado quando o conteúdo
+  // (ex: lista de checkboxes) precisa de mais largura que uma coluna normal.
+  &--largo {
+    grid-column: 1 / -1;
+  }
+}
+
+.lista-selecao-vendas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 1rem;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    margin-bottom: 0 !important;
+
+    input[type='checkbox'] { width: auto; flex: none; }
+
+    span:first-of-type { flex: 1; }
+
+    .numero {
+      font-family: var(--fonte-dados);
+      color: var(--cor-texto-suave);
+    }
   }
 }
 
@@ -380,6 +456,145 @@ a {
   &--espacada {
     margin-top: 1.75rem;
   }
+}
+
+.abas {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.abas__item {
+  padding: 0.6rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-weight: 500;
+  font-size: 0.85rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover { color: var(--cor-texto); }
+
+  &--ativa {
+    color: var(--cor-ambar);
+    border-bottom-color: var(--cor-ambar);
+  }
+}
+
+.grade-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.cartao-indicador {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &__rotulo {
+    font-size: 0.78rem;
+    color: var(--cor-texto-suave);
+    font-weight: 500;
+  }
+
+  &__valor {
+    font-family: var(--fonte-dados);
+    font-size: 1.4rem;
+
+    &--positivo { color: var(--cor-sucesso); }
+    &--negativo { color: var(--cor-perigo); }
+  }
+}
+
+.painel-grafico {
+  padding: 1.25rem;
+}
+
+.grafico-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 180px;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+
+  &__coluna {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1 0 28px;
+    height: 100%;
+    min-width: 28px;
+  }
+
+  &__barra {
+    width: 100%;
+    max-width: 26px;
+    background: var(--cor-ambar);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.2s ease;
+  }
+
+  &__rotulo {
+    margin-top: 0.4rem;
+    font-size: 0.65rem;
+    color: var(--cor-texto-suave);
+    white-space: nowrap;
+  }
+
+  // Variante com duas barras lado a lado por coluna (ex: entradas x saídas do fluxo de caixa).
+  &--dupla &__coluna {
+    flex-basis: 34px;
+    min-width: 34px;
+  }
+}
+
+.grafico-barras__par {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.grafico-barras__barra--entrada {
+  background: var(--cor-sucesso);
+  max-width: 14px;
+}
+
+.grafico-barras__barra--saida {
+  background: var(--cor-perigo);
+  max-width: 14px;
+}
+
+.legenda-grafico {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+
+  span { display: inline-flex; align-items: center; gap: 0.35rem; }
+}
+
+.ponto {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &--entrada { background: var(--cor-sucesso); }
+  &--saida { background: var(--cor-perigo); }
 }
 
 .form-acoes--inicio {

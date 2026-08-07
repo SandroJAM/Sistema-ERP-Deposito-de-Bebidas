@@ -57,6 +57,7 @@ public class PagamentoService {
     public PagamentoDTO marcarComoPago(Long id) {
         Pagamento pagamento = buscarEntidade(id);
         pagamento.setStatus(StatusPagamento.PAGO);
+        pagamento.setDataPagamento(LocalDate.now());
         return toDTO(pagamentoRepository.save(pagamento));
     }
 
@@ -119,7 +120,16 @@ public class PagamentoService {
         pagamento.setValorAPagar(dto.getValorAPagar());
         pagamento.setDataVencimento(dto.getDataVencimento());
         pagamento.setDescricao(dto.getDescricao());
-        pagamento.setStatus(dto.getStatus() != null ? StatusPagamento.valueOf(dto.getStatus()) : StatusPagamento.PENDENTE);
+
+        StatusPagamento novoStatus = dto.getStatus() != null ? StatusPagamento.valueOf(dto.getStatus()) : StatusPagamento.PENDENTE;
+        // Mantém a data de pagamento coerente com o status: some se o pagamento deixar de estar
+        // PAGO por essa tela, e é preenchida por marcarComoPago (não por aqui) quando fica PAGO.
+        if (novoStatus != StatusPagamento.PAGO) {
+            pagamento.setDataPagamento(null);
+        } else if (pagamento.getDataPagamento() == null) {
+            pagamento.setDataPagamento(LocalDate.now());
+        }
+        pagamento.setStatus(novoStatus);
     }
 
     private Pagamento buscarEntidade(Long id) {
@@ -143,6 +153,7 @@ public class PagamentoService {
         dto.setDataVencimento(pagamento.getDataVencimento());
         dto.setDescricao(pagamento.getDescricao());
         dto.setStatus(pagamento.getStatus().name());
+        dto.setDataPagamento(pagamento.getDataPagamento());
         dto.setOrigem(nota != null ? "NOTA_ENTRADA" : "AVULSO");
         return dto;
     }

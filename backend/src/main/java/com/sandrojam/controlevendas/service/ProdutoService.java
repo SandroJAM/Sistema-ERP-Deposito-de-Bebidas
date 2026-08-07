@@ -54,6 +54,14 @@ public class ProdutoService {
         return toDTO(buscarEntidade(id));
     }
 
+    /** Produtos ativos cujo estoque atual já caiu para o nível mínimo configurado (ou abaixo). */
+    @Transactional(readOnly = true)
+    public List<ProdutoDTO> listarEstoqueBaixo() {
+        return produtoRepository.findComEstoqueBaixo().stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     public ProdutoDTO criar(ProdutoDTO dto) {
         Categoria categoria = buscarCategoria(dto.getCategoriaId());
         Fornecedor fornecedor = buscarFornecedor(dto.getFornecedorId());
@@ -85,6 +93,7 @@ public class ProdutoService {
         produto.setPreco(dto.getPreco());
         produto.setPrecoCusto(dto.getPrecoCusto() != null ? dto.getPrecoCusto() : BigDecimal.ZERO);
         produto.setEstoqueAtual(dto.getEstoqueAtual());
+        produto.setEstoqueMinimo(dto.getEstoqueMinimo() != null ? dto.getEstoqueMinimo() : 0);
         produto.setAtivo(dto.getAtivo() != null ? dto.getAtivo() : true);
         produto.setCategoria(categoria);
         produto.setFornecedor(fornecedor);
@@ -119,6 +128,8 @@ public class ProdutoService {
         dto.setPreco(produto.getPreco());
         dto.setPrecoCusto(produto.getPrecoCusto());
         dto.setEstoqueAtual(produto.getEstoqueAtual());
+        dto.setEstoqueMinimo(produto.getEstoqueMinimo());
+        dto.setEstoqueBaixo(produto.getEstoqueMinimo() > 0 && produto.getEstoqueAtual() <= produto.getEstoqueMinimo());
         dto.setAtivo(produto.getAtivo());
         dto.setCategoriaId(produto.getCategoria().getId());
         dto.setCategoriaNome(produto.getCategoria().getNome());

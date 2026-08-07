@@ -1,0 +1,138 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Financeiro</h1>
+    <p>Contas a pagar, contas a receber e fluxo de caixa.</p>
+  </div>
+</header>
+
+<div class="painel">
+  <div class="grade-formulario">
+    <label class="form-campo">
+      <span>Período de</span>
+      <input type="date" [ngModel]="periodoInicio()" (ngModelChange)="periodoInicio.set($event || null)" />
+    </label>
+    <label class="form-campo">
+      <span>Período até</span>
+      <input type="date" [ngModel]="periodoFim()" (ngModelChange)="periodoFim.set($event || null)" />
+    </label>
+  </div>
+  <div class="form-acoes form-acoes--inicio">
+    <button type="button" class="botao-secundario" (click)="usarUltimos30Dias()">Últimos 30 dias</button>
+    <button type="button" class="botao-secundario" (click)="usarMesAtual()">Mês atual</button>
+    <button type="button" class="botao-primario" [disabled]="carregando()" (click)="aplicarPeriodo()">
+      Aplicar
+    </button>
+  </div>
+  <small class="form-dica">
+    Os totais de "pendente / vencido / a vencer" e "saldo devedor" são a situação de HOJE — o
+    período filtra só o que já foi efetivamente pago/recebido, e o gráfico de fluxo de caixa.
+  </small>
+</div>
+
+@if (carregando()) {
+  <div class="painel"><div class="estado-vazio">Carregando...</div></div>
+} @else if (erro()) {
+  <div class="painel"><div class="estado-vazio">{{ erro() }}</div></div>
+} @else {
+  @if (relatorio(); as dados) {
+  <h2 class="titulo-secao titulo-secao--espacada">Contas a pagar</h2>
+  <div class="grade-cartoes">
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Pendente</span>
+      <strong class="cartao-indicador__valor">R$ {{ dados.contasAPagar.totalPendente | number: '1.2-2' }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Vencido ({{ dados.contasAPagar.quantidadeVencidas }})</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--negativo">
+        R$ {{ dados.contasAPagar.totalVencido | number: '1.2-2' }}
+      </strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">A vencer</span>
+      <strong class="cartao-indicador__valor">R$ {{ dados.contasAPagar.totalAVencer | number: '1.2-2' }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Pago no período</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--positivo">
+        R$ {{ dados.contasAPagar.totalPagoNoPeriodo | number: '1.2-2' }}
+      </strong>
+    </div>
+  </div>
+
+  <h2 class="titulo-secao titulo-secao--espacada">Contas a receber</h2>
+  <div class="grade-cartoes">
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Saldo devedor (clientes)</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--negativo">
+        R$ {{ dados.contasAReceber.totalDevido | number: '1.2-2' }}
+      </strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Clientes devedores</span>
+      <strong class="cartao-indicador__valor">{{ dados.contasAReceber.quantidadeClientesDevedores }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Vendas pendentes</span>
+      <strong class="cartao-indicador__valor">{{ dados.contasAReceber.quantidadeVendasPendentes }}</strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Recebido no período</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--positivo">
+        R$ {{ dados.contasAReceber.totalRecebidoNoPeriodo | number: '1.2-2' }}
+      </strong>
+    </div>
+  </div>
+
+  <h2 class="titulo-secao titulo-secao--espacada">Fluxo de caixa</h2>
+  <div class="grade-cartoes">
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Entradas no período</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--positivo">
+        R$ {{ dados.fluxoCaixa.totalEntradas | number: '1.2-2' }}
+      </strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Saídas no período</span>
+      <strong class="cartao-indicador__valor cartao-indicador__valor--negativo">
+        R$ {{ dados.fluxoCaixa.totalSaidas | number: '1.2-2' }}
+      </strong>
+    </div>
+    <div class="cartao-indicador">
+      <span class="cartao-indicador__rotulo">Saldo do período</span>
+      <strong
+        class="cartao-indicador__valor"
+        [class.cartao-indicador__valor--positivo]="dados.fluxoCaixa.saldoPeriodo >= 0"
+        [class.cartao-indicador__valor--negativo]="dados.fluxoCaixa.saldoPeriodo < 0"
+      >
+        R$ {{ dados.fluxoCaixa.saldoPeriodo | number: '1.2-2' }}
+      </strong>
+    </div>
+  </div>
+
+  <div class="painel painel-grafico">
+    @if (dados.fluxoCaixa.dias.length === 0) {
+      <div class="estado-vazio">Nenhuma movimentação nesse período.</div>
+    } @else {
+      <div class="legenda-grafico">
+        <span><i class="ponto ponto--entrada"></i> Entradas</span>
+        <span><i class="ponto ponto--saida"></i> Saídas</span>
+      </div>
+      <div class="grafico-barras grafico-barras--dupla">
+        @for (dia of dados.fluxoCaixa.dias; track dia.data) {
+          <div
+            class="grafico-barras__coluna"
+            [title]="'Entradas: R$ ' + (dia.entradas | number: '1.2-2') + ' · Saídas: R$ ' + (dia.saidas | number: '1.2-2')"
+          >
+            <div class="grafico-barras__par">
+              <div class="grafico-barras__barra grafico-barras__barra--entrada" [style.height.%]="alturaBarra(dia.entradas)"></div>
+              <div class="grafico-barras__barra grafico-barras__barra--saida" [style.height.%]="alturaBarra(dia.saidas)"></div>
+            </div>
+            <span class="grafico-barras__rotulo">{{ dia.data | date: 'dd/MM' }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  }
+}
+

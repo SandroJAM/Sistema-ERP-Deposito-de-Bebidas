@@ -21,11 +21,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   erro = signal<string | null>(null);
   busca = signal('');
 
+  produtosEstoqueBaixo = signal<Produto[]>([]);
+  mostrarAlertaEstoque = signal(true);
+
   // Dispara a busca só 300ms depois da última tecla digitada, e ignora
   // termos repetidos — evita mandar uma requisição pra API a cada letra.
   private buscaSubject = new Subject<string>();
 
   ngOnInit(): void {
+    this.carregarAlertaEstoque();
+
     this.buscaSubject
       .pipe(
         startWith(''),
@@ -56,5 +61,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   aoDigitar(valor: string): void {
     this.busca.set(valor);
     this.buscaSubject.next(valor);
+  }
+
+  private carregarAlertaEstoque(): void {
+    this.produtoService.listarEstoqueBaixo().subscribe({
+      next: (produtos) => this.produtosEstoqueBaixo.set(produtos),
+      error: () => this.produtosEstoqueBaixo.set([]),
+    });
   }
 }

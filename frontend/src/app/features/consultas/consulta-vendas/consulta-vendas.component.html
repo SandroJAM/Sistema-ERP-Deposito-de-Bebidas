@@ -243,20 +243,36 @@
     @if (vendasPendentesDoCliente().length > 0) {
       <h3 class="titulo-secao titulo-secao--espacada">Registrar recebimento</h3>
       <div class="grade-formulario">
-        <label class="form-campo">
-          <span>Venda</span>
-          <select [ngModel]="vendaRecebimentoId()" (ngModelChange)="vendaRecebimentoId.set($event)">
-            <option [ngValue]="null">Selecione...</option>
+        <div class="form-campo form-campo--largo">
+          <span>Vendas em aberto (selecione uma ou mais)</span>
+          <div class="lista-selecao-vendas">
             @for (venda of vendasPendentesDoCliente(); track venda.id) {
-              <option [ngValue]="venda.id">
-                Venda #{{ venda.id }} — deve R$ {{ venda.valorDevido | number: '1.2-2' }}
-              </option>
+              <label class="lista-selecao-vendas__item">
+                <input
+                  type="checkbox"
+                  [checked]="vendaEstaSelecionadaParaRecebimento(venda.id)"
+                  (change)="alternarSelecaoVenda(venda.id)"
+                />
+                <span>Venda #{{ venda.id }} — {{ venda.dataVenda | date: 'dd/MM/yy' }}</span>
+                <span class="numero">R$ {{ venda.valorDevido | number: '1.2-2' }}</span>
+              </label>
             }
-          </select>
-        </label>
+          </div>
+        </div>
         <label class="form-campo">
           <span>Valor recebido</span>
-          <input type="number" min="0.01" step="0.01" [ngModel]="valorRecebimento()" (ngModelChange)="valorRecebimento.set($event)" />
+          <input
+            type="text"
+            inputmode="decimal"
+            placeholder="0,00"
+            [inputDinheiro]="valorRecebimento()"
+            (inputDinheiroChange)="valorRecebimento.set($event)"
+          />
+          @if (vendasSelecionadasRecebimento().size > 0) {
+            <span class="form-dica">
+              {{ vendasSelecionadasRecebimento().size }} venda(s) selecionada(s) — valor já somado, edite se for baixa parcial.
+            </span>
+          }
         </label>
       </div>
       <label class="form-campo">
@@ -267,7 +283,7 @@
         <button
           type="button"
           class="botao-primario"
-          [disabled]="registrandoRecebimento() || !vendaRecebimentoId() || !valorRecebimento()"
+          [disabled]="registrandoRecebimento() || vendasSelecionadasRecebimento().size === 0 || !valorRecebimento()"
           (click)="registrarRecebimento()"
         >
           {{ registrandoRecebimento() ? 'Registrando...' : 'Registrar recebimento' }}

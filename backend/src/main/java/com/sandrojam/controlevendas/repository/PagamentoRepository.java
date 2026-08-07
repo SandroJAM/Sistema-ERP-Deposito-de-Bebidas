@@ -13,6 +13,12 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
 
     List<Pagamento> findByNotaEntradaId(Long notaEntradaId);
 
+    /** Todos os pagamentos não cancelados — base dos relatórios de contas a pagar e fluxo de caixa. */
+    List<Pagamento> findByStatusNot(StatusPagamento status);
+
+    /** Pagamentos efetivamente pagos dentro do período (por dataPagamento) — saídas do fluxo de caixa. */
+    List<Pagamento> findByStatusAndDataPagamentoBetween(StatusPagamento status, LocalDate inicio, LocalDate fim);
+
     /**
      * Busca combinando filtros opcionais (todos podem vir nulos = "todos"): fornecedor (da nota de
      * origem, quando houver, ou do próprio pagamento quando avulso), status e faixa de vencimento.

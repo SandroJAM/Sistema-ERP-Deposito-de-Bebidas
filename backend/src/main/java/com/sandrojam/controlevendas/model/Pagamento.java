@@ -74,4 +74,9 @@ public class Pagamento {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusPagamento status = StatusPagamento.PENDENTE;
+
+    // Preenchida automaticamente quando o pagamento é marcado como PAGO. Base do fluxo de caixa
+    // (saídas), que precisa da data em que o dinheiro efetivamente saiu, não do vencimento.
+    @Column(name = "data_pagamento")
+    private LocalDate dataPagamento;
 }

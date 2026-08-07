@@ -4,6 +4,7 @@ import com.sandrojam.controlevendas.model.StatusVenda;
 import com.sandrojam.controlevendas.model.Venda;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VendaRepository extends JpaRepository<Venda, Long> {
@@ -13,4 +14,7 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
 
     /** Vendas com cliente identificado e não canceladas — base para o resumo de devedores. */
     List<Venda> findByClienteIsNotNullAndStatusNot(StatusVenda status);
+
+    /** Vendas não canceladas dentro de um período — base do dashboard de vendas. */
+    List<Venda> findByStatusNotAndDataVendaBetween(StatusVenda status, LocalDateTime inicio, LocalDateTime fim);
 }

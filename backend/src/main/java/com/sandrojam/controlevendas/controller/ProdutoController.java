@@ -29,6 +29,12 @@ public class ProdutoController {
         return produtoService.buscarPorId(id);
     }
 
+    /** Produtos ativos no nível mínimo de estoque ou abaixo dele — base do alerta de estoque baixo. */
+    @GetMapping("/estoque-baixo")
+    public List<ProdutoDTO> listarEstoqueBaixo() {
+        return produtoService.listarEstoqueBaixo();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProdutoDTO criar(@Valid @RequestBody ProdutoDTO dto) {

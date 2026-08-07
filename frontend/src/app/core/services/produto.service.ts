@@ -14,6 +14,11 @@ export class ProdutoService {
     return this.http.get<Produto[]>(this.url, { params });
   }
 
+  /** Produtos ativos com estoque no nível mínimo configurado ou abaixo dele. */
+  listarEstoqueBaixo(): Observable<Produto[]> {
+    return this.http.get<Produto[]>(`${this.url}/estoque-baixo`);
+  }
+
   criar(dados: ProdutoForm): Observable<Produto> {
     return this.http.post<Produto>(this.url, dados);
   }

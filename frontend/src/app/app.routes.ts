@@ -16,6 +16,9 @@ import { EmpresaComponent } from './features/empresa/empresa.component';
 import { ConsultaNotasEntradaComponent } from './features/consultas/consulta-notas-entrada/consulta-notas-entrada.component';
 import { ConsultaVendasComponent } from './features/consultas/consulta-vendas/consulta-vendas.component';
 import { ConsultaPagamentosComponent } from './features/consultas/consulta-pagamentos/consulta-pagamentos.component';
+import { VasilhamesComponent } from './features/vasilhames/vasilhames.component';
+import { DashboardVendasComponent } from './features/relatorios/dashboard-vendas/dashboard-vendas.component';
+import { FinanceiroComponent } from './features/relatorios/financeiro/financeiro.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -36,6 +39,10 @@ export const routes: Routes = [
       { path: 'notas-entrada', component: NotasEntradaComponent },
       { path: 'vendas', component: VendasComponent },
       { path: 'pagamentos', component: PagamentosComponent },
+      { path: 'vasilhames', component: VasilhamesComponent },
+      // Relatórios
+      { path: 'relatorios/vendas', component: DashboardVendasComponent },
+      { path: 'relatorios/financeiro', component: FinanceiroComponent },
       // Consultas
       { path: 'consultas/notas-entrada', component: ConsultaNotasEntradaComponent },
       { path: 'consultas/vendas', component: ConsultaVendasComponent },

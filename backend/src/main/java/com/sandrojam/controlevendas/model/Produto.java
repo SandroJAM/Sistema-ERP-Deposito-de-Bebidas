@@ -48,6 +48,15 @@ public class Produto {
     @Column(name = "estoque_atual", nullable = false)
     private Integer estoqueAtual = 0;
 
+    /**
+     * Nível mínimo de estoque desejado. Quando estoqueAtual cai para este valor ou abaixo,
+     * o produto passa a aparecer no alerta de estoque baixo. Zero desliga o alerta pra esse produto.
+     */
+    @NotNull
+    @PositiveOrZero
+    @Column(name = "estoque_minimo", nullable = false)
+    private Integer estoqueMinimo = 0;
+
     @Column(nullable = false)
     private Boolean ativo = true;
 

@@ -35,7 +35,14 @@
             <td>{{ produto.fornecedorNome || '—' }}</td>
             <td class="numero">{{ produto.precoCusto | number: '1.2-2' }}</td>
             <td class="numero">{{ produto.preco | number: '1.2-2' }}</td>
-            <td class="numero">{{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}</td>
+            <td class="numero">
+              <span [class.texto-alerta]="produto.estoqueBaixo">
+                {{ produto.estoqueAtual }}{{ produto.unidade ? ' ' + produto.unidade : '' }}
+              </span>
+              @if (produto.estoqueBaixo) {
+                <span class="selo selo--alerta" title="Estoque no nível mínimo ou abaixo dele">⚠ baixo</span>
+              }
+            </td>
             <td>
               <span class="selo" [class.selo--ativo]="produto.ativo" [class.selo--inativo]="!produto.ativo">
                 {{ produto.ativo ? 'Ativo' : 'Inativo' }}
@@ -112,6 +119,15 @@
         @if (form.get('estoqueAtual')?.invalid && form.get('estoqueAtual')?.touched) {
           <small class="form-erro">Informe uma quantidade válida.</small>
         }
+      </label>
+
+      <label class="form-campo">
+        <span>Estoque mínimo</span>
+        <input type="number" formControlName="estoqueMinimo" min="0" step="1" />
+        @if (form.get('estoqueMinimo')?.invalid && form.get('estoqueMinimo')?.touched) {
+          <small class="form-erro">Informe uma quantidade válida.</small>
+        }
+        <small class="form-dica">Quando o estoque atual cair pra esse nível ou abaixo, o produto entra no alerta de estoque baixo. Zero desliga o alerta.</small>
       </label>
 
       <label class="form-checkbox">

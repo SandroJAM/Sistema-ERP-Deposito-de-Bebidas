@@ -63,6 +63,22 @@ export class ShellComponent implements OnInit {
         { rota: '/notas-entrada', rotulo: 'Notas de Entrada', icone: 'M9 3h6l3 3v15H6V6zM9 3v4h6M9 12h6M9 16h4' },
         { rota: '/vendas', rotulo: 'Vendas', icone: 'M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6' },
         { rota: '/pagamentos', rotulo: 'Pagamentos', icone: 'M3 6h18v12H3zM3 10h18M7 15h4' },
+        { rota: '/vasilhames', rotulo: 'Vasilhames', icone: 'M9 2h6v3l1.5 2v14a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V7L9 5zM9 2v3h6' },
+      ],
+    },
+    {
+      titulo: 'Relatórios',
+      itens: [
+        {
+          rota: '/relatorios/vendas',
+          rotulo: 'Dashboard de Vendas',
+          icone: 'M4 19h3v-6H4zM10.5 19h3V9h-3zM17 19h3V4h-3z',
+        },
+        {
+          rota: '/relatorios/financeiro',
+          rotulo: 'Financeiro',
+          icone: 'M12 1v22M17.5 5.5H9.75a3.25 3.25 0 0 0 0 6.5h4.5a3.25 3.25 0 0 1 0 6.5H6',
+        },
       ],
     },
     {

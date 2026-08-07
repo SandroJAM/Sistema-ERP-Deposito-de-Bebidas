@@ -1,0 +1,225 @@
+<header class="cabecalho-pagina">
+  <div>
+    <h1>Vasilhames</h1>
+    <p>Controle de cascos/vasilhames emprestados aos clientes e suas devoluções.</p>
+  </div>
+  <div class="acoes-linha">
+    <button type="button" class="botao-secundario" (click)="abrirNovoTipo()">+ Tipo de casco</button>
+    <button type="button" class="botao-primario" (click)="abrirRegistroMovimento()">+ Registrar movimento</button>
+  </div>
+</header>
+
+@if (carregando()) {
+  <div class="painel"><div class="estado-vazio">Carregando...</div></div>
+} @else if (erro()) {
+  <div class="painel"><div class="estado-vazio">{{ erro() }}</div></div>
+} @else {
+  <div class="abas">
+    <button type="button" class="abas__item" [class.abas__item--ativa]="abaAtiva() === 'saldos'" (click)="abaAtiva.set('saldos')">
+      Em aberto ({{ saldos().length }})
+    </button>
+    <button type="button" class="abas__item" [class.abas__item--ativa]="abaAtiva() === 'historico'" (click)="abaAtiva.set('historico')">
+      Histórico de movimentos
+    </button>
+  </div>
+
+  @if (abaAtiva() === 'saldos') {
+    <div class="painel">
+      @if (saldos().length === 0) {
+        <div class="estado-vazio">Nenhum casco em aberto no momento — tudo devolvido.</div>
+      } @else {
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Tipo de casco</th>
+              <th class="numero">Quantidade em aberto</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (saldo of saldos(); track saldo.clienteId + '-' + saldo.tipoCascoId) {
+              <tr>
+                <td>{{ saldo.clienteNome }}</td>
+                <td>{{ saldo.tipoCascoNome }}</td>
+                <td class="numero">{{ saldo.quantidadeEmAberto }}</td>
+                <td class="acoes-linha">
+                  <button type="button" class="botao-secundario" (click)="abrirRegistroMovimento(saldo)">
+                    Registrar devolução
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  } @else {
+    <div class="painel">
+      @if (movimentos().length === 0) {
+        <div class="estado-vazio">Nenhum movimento registrado ainda.</div>
+      } @else {
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Tipo de casco</th>
+              <th>Movimento</th>
+              <th class="numero">Quantidade</th>
+              <th>Observação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movimento of movimentos(); track movimento.id) {
+              <tr>
+                <td>{{ movimento.data | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ movimento.clienteNome }}</td>
+                <td>{{ movimento.tipoCascoNome }}</td>
+                <td>
+                  <span
+                    class="selo"
+                    [class.selo--inativo]="movimento.tipoMovimento === 'SAIDA'"
+                    [class.selo--ativo]="movimento.tipoMovimento === 'DEVOLUCAO'"
+                  >
+                    {{ movimento.tipoMovimento === 'SAIDA' ? 'Saída' : 'Devolução' }}
+                  </span>
+                </td>
+                <td class="numero">{{ movimento.quantidade }}</td>
+                <td>{{ movimento.observacao || '—' }}</td>
+                <td class="acoes-linha">
+                  @if (authService.ehAdmin()) {
+                    <button type="button" class="botao-perigo" (click)="excluirMovimento(movimento)">Excluir</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+
+  <h2 class="titulo-secao titulo-secao--espacada">Tipos de casco cadastrados</h2>
+  <div class="painel">
+    @if (tiposCasco().length === 0) {
+      <div class="estado-vazio">Nenhum tipo de casco cadastrado ainda.</div>
+    } @else {
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th class="numero">Valor de reposição</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tipo of tiposCasco(); track tipo.id) {
+            <tr>
+              <td>{{ tipo.nome }}</td>
+              <td class="numero">R$ {{ tipo.valorReposicao | number: '1.2-2' }}</td>
+              <td>
+                <span class="selo" [class.selo--ativo]="tipo.ativo" [class.selo--inativo]="!tipo.ativo">
+                  {{ tipo.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+              </td>
+              <td class="acoes-linha">
+                <button type="button" class="botao-secundario" (click)="abrirEdicaoTipo(tipo)">Editar</button>
+                @if (authService.ehAdmin()) {
+                  <button type="button" class="botao-perigo" (click)="excluirTipo(tipo)">Excluir</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (modalMovimentoAberto()) {
+  <app-modal titulo="Registrar movimento de casco" (fechar)="fecharModalMovimento()">
+    <form [formGroup]="formMovimento" (ngSubmit)="registrarMovimento()" novalidate>
+      <label class="form-campo">
+        <span>Cliente</span>
+        <select formControlName="clienteId">
+          <option [ngValue]="null">Selecione...</option>
+          @for (cliente of clientes(); track cliente.id) {
+            <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-campo">
+        <span>Tipo de casco</span>
+        <select formControlName="tipoCascoId">
+          @for (tipo of tiposCascoAtivos(); track tipo.id) {
+            <option [ngValue]="tipo.id">{{ tipo.nome }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-campo">
+        <span>Movimento</span>
+        <select formControlName="tipoMovimento">
+          <option value="SAIDA">Saída (casco foi com o cliente)</option>
+          <option value="DEVOLUCAO">Devolução (cliente trouxe de volta)</option>
+        </select>
+      </label>
+
+      <label class="form-campo">
+        <span>Quantidade</span>
+        <input type="number" formControlName="quantidade" min="1" step="1" />
+        @if (formMovimento.get('quantidade')?.invalid && formMovimento.get('quantidade')?.touched) {
+          <small class="form-erro">Informe uma quantidade válida.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Observação (opcional)</span>
+        <input type="text" formControlName="observacao" placeholder="Ex: referente à venda de hoje" />
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModalMovimento()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="registrandoMovimento()">
+          {{ registrandoMovimento() ? 'Registrando...' : 'Registrar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (modalTipoAberto()) {
+  <app-modal [titulo]="tipoEmEdicao() ? 'Editar tipo de casco' : 'Novo tipo de casco'" (fechar)="fecharModalTipo()">
+    <form [formGroup]="formTipo" (ngSubmit)="salvarTipo()" novalidate>
+      <label class="form-campo">
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex: Caixa Skol 600ml" autofocus />
+        @if (formTipo.get('nome')?.invalid && formTipo.get('nome')?.touched) {
+          <small class="form-erro">Informe um nome com pelo menos 2 letras.</small>
+        }
+      </label>
+
+      <label class="form-campo">
+        <span>Valor de reposição (R$)</span>
+        <input type="number" formControlName="valorReposicao" min="0" step="0.01" />
+        <small class="form-dica">Cobrado do cliente caso o casco não seja devolvido.</small>
+      </label>
+
+      <label class="form-checkbox">
+        <input type="checkbox" formControlName="ativo" />
+        <span>Tipo ativo (disponível para novos movimentos)</span>
+      </label>
+
+      <div class="form-acoes">
+        <button type="button" class="botao-secundario" (click)="fecharModalTipo()">Cancelar</button>
+        <button type="submit" class="botao-primario" [disabled]="salvandoTipo()">
+          {{ salvandoTipo() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
