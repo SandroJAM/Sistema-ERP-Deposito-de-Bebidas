@@ -51,10 +51,12 @@ public class Produto {
     /**
      * Nível mínimo de estoque desejado. Quando estoqueAtual cai para este valor ou abaixo,
      * o produto passa a aparecer no alerta de estoque baixo. Zero desliga o alerta pra esse produto.
+     * columnDefinition com DEFAULT 0 evita que o ALTER TABLE falhe em bancos com produtos já
+     * cadastrados (sem o default, o Postgres recusa criar a coluna NOT NULL com linhas nulas).
      */
     @NotNull
     @PositiveOrZero
-    @Column(name = "estoque_minimo", nullable = false)
+    @Column(name = "estoque_minimo", nullable = false, columnDefinition = "integer default 0")
     private Integer estoqueMinimo = 0;
 
     @Column(nullable = false)
