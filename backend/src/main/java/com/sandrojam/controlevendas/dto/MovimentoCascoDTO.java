@@ -3,6 +3,7 @@ package com.sandrojam.controlevendas.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class MovimentoCascoDTO {
@@ -30,6 +31,9 @@ public class MovimentoCascoDTO {
     private LocalDate data;
 
     private Long vendaId;
+
+    // Somente leitura: preenchido pelo backend quando tipoMovimento = PAGO (quantidade x valorReposicao).
+    private BigDecimal valorCobrado;
 
     private String observacao;
 
@@ -103,6 +107,14 @@ public class MovimentoCascoDTO {
 
     public void setVendaId(Long vendaId) {
         this.vendaId = vendaId;
+    }
+
+    public BigDecimal getValorCobrado() {
+        return valorCobrado;
+    }
+
+    public void setValorCobrado(BigDecimal valorCobrado) {
+        this.valorCobrado = valorCobrado;
     }
 
     public String getObservacao() {

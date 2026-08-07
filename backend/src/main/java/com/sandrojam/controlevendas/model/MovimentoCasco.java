@@ -8,11 +8,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Um lançamento de saída (casco foi com o cliente) ou devolução (cliente trouxe de volta).
- * O saldo em aberto de um cliente para um tipo de casco é a soma das SAIDA menos as DEVOLUCAO.
+ * Um lançamento de saída (casco foi com o cliente), devolução física (cliente trouxe de volta),
+ * ou pagamento da reposição (cliente opta por pagar em vez de devolver). O saldo em aberto de um
+ * cliente para um tipo de casco é a soma das SAIDA menos as DEVOLUCAO e PAGO.
  */
 @Entity
 @Table(name = "movimento_casco")
@@ -53,6 +55,11 @@ public class MovimentoCasco {
     // Referência opcional à venda que originou a saída de casco, quando aplicável.
     @Column(name = "venda_id")
     private Long vendaId;
+
+    // Preenchido só quando tipoMovimento = PAGO: valor cobrado do cliente por não devolver o
+    // casco (quantidade x valorReposicao do tipo de casco no momento do lançamento).
+    @Column(name = "valor_cobrado", precision = 10, scale = 2)
+    private BigDecimal valorCobrado;
 
     private String observacao;
 }

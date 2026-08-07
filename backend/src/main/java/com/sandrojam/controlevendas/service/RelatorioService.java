@@ -10,11 +10,14 @@ import com.sandrojam.controlevendas.dto.ProdutoMaisVendidoDTO;
 import com.sandrojam.controlevendas.dto.RelatorioFinanceiroDTO;
 import com.sandrojam.controlevendas.dto.VendaPorDiaDTO;
 import com.sandrojam.controlevendas.model.ItemVenda;
+import com.sandrojam.controlevendas.model.MovimentoCasco;
 import com.sandrojam.controlevendas.model.Pagamento;
 import com.sandrojam.controlevendas.model.RecebimentoVenda;
 import com.sandrojam.controlevendas.model.StatusPagamento;
 import com.sandrojam.controlevendas.model.StatusVenda;
+import com.sandrojam.controlevendas.model.TipoMovimentoCasco;
 import com.sandrojam.controlevendas.model.Venda;
+import com.sandrojam.controlevendas.repository.MovimentoCascoRepository;
 import com.sandrojam.controlevendas.repository.PagamentoRepository;
 import com.sandrojam.controlevendas.repository.RecebimentoVendaRepository;
 import com.sandrojam.controlevendas.repository.VendaRepository;
@@ -47,13 +50,16 @@ public class RelatorioService {
     private final VendaRepository vendaRepository;
     private final PagamentoRepository pagamentoRepository;
     private final RecebimentoVendaRepository recebimentoVendaRepository;
+    private final MovimentoCascoRepository movimentoCascoRepository;
     private final VendaService vendaService;
 
     public RelatorioService(VendaRepository vendaRepository, PagamentoRepository pagamentoRepository,
-                             RecebimentoVendaRepository recebimentoVendaRepository, VendaService vendaService) {
+                             RecebimentoVendaRepository recebimentoVendaRepository, MovimentoCascoRepository movimentoCascoRepository,
+                             VendaService vendaService) {
         this.vendaRepository = vendaRepository;
         this.pagamentoRepository = pagamentoRepository;
         this.recebimentoVendaRepository = recebimentoVendaRepository;
+        this.movimentoCascoRepository = movimentoCascoRepository;
         this.vendaService = vendaService;
     }
 
@@ -162,14 +168,19 @@ public class RelatorioService {
         LocalDate[] periodo = resolverPeriodo(inicio, fim);
         List<RecebimentoVenda> recebimentosNoPeriodo =
                 recebimentoVendaRepository.findByDataRecebimentoBetween(periodo[0], periodo[1]);
-        dto.setTotalRecebidoNoPeriodo(somar(recebimentosNoPeriodo, RecebimentoVenda::getValor));
+        List<MovimentoCasco> reposicoesPagasNoPeriodo = movimentoCascoRepository.findByTipoMovimentoAndDataBetween(
+                TipoMovimentoCasco.PAGO, periodo[0], periodo[1]);
+        dto.setTotalRecebidoNoPeriodo(
+                somar(recebimentosNoPeriodo, RecebimentoVenda::getValor)
+                        .add(somar(reposicoesPagasNoPeriodo, MovimentoCasco::getValorCobrado)));
 
         return dto;
     }
 
     /**
-     * Entradas (recebimentos de venda, fiado quitado ou à vista) menos saídas (pagamentos
-     * efetivamente pagos) dentro do período, com a série diária para o gráfico.
+     * Entradas (recebimentos de venda — fiado quitado ou à vista — mais reposições de casco
+     * pagas em vez de devolvidas) menos saídas (pagamentos efetivamente pagos) dentro do
+     * período, com a série diária para o gráfico.
      */
     public FluxoCaixaDTO gerarFluxoCaixa(LocalDate inicio, LocalDate fim) {
         LocalDate[] periodo = resolverPeriodo(inicio, fim);
@@ -178,11 +189,17 @@ public class RelatorioService {
 
         List<RecebimentoVenda> recebimentos = recebimentoVendaRepository.findByDataRecebimentoBetween(inicioReal, fimReal);
         List<Pagamento> pagos = pagamentoRepository.findByStatusAndDataPagamentoBetween(StatusPagamento.PAGO, inicioReal, fimReal);
+        List<MovimentoCasco> reposicoesPagas = movimentoCascoRepository.findByTipoMovimentoAndDataBetween(
+                TipoMovimentoCasco.PAGO, inicioReal, fimReal);
 
         Map<LocalDate, FluxoCaixaDiaDTO> porDia = new TreeMap<>();
         for (RecebimentoVenda recebimento : recebimentos) {
             FluxoCaixaDiaDTO dia = obterOuCriarDia(porDia, recebimento.getDataRecebimento());
             dia.setEntradas(dia.getEntradas().add(recebimento.getValor()));
+        }
+        for (MovimentoCasco reposicao : reposicoesPagas) {
+            FluxoCaixaDiaDTO dia = obterOuCriarDia(porDia, reposicao.getData());
+            dia.setEntradas(dia.getEntradas().add(reposicao.getValorCobrado()));
         }
         for (Pagamento pagamento : pagos) {
             FluxoCaixaDiaDTO dia = obterOuCriarDia(porDia, pagamento.getDataPagamento());
@@ -190,7 +207,8 @@ public class RelatorioService {
         }
         porDia.values().forEach(dia -> dia.setSaldoDia(dia.getEntradas().subtract(dia.getSaidas())));
 
-        BigDecimal totalEntradas = somar(recebimentos, RecebimentoVenda::getValor);
+        BigDecimal totalEntradas = somar(recebimentos, RecebimentoVenda::getValor)
+                .add(somar(reposicoesPagas, MovimentoCasco::getValorCobrado));
         BigDecimal totalSaidas = somar(pagos, Pagamento::getValorAPagar);
 
         FluxoCaixaDTO dto = new FluxoCaixaDTO();

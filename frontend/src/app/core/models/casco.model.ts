@@ -7,7 +7,7 @@ export interface TipoCasco {
 
 export type TipoCascoForm = Omit<TipoCasco, 'id'>;
 
-export type TipoMovimentoCasco = 'SAIDA' | 'DEVOLUCAO';
+export type TipoMovimentoCasco = 'SAIDA' | 'DEVOLUCAO' | 'PAGO';
 
 export interface MovimentoCasco {
   id: number;
@@ -19,6 +19,8 @@ export interface MovimentoCasco {
   quantidade: number;
   data: string;
   vendaId: number | null;
+  /** Somente leitura: preenchido pelo backend quando tipoMovimento = 'PAGO'. */
+  valorCobrado: number | null;
   observacao: string | null;
 }
 

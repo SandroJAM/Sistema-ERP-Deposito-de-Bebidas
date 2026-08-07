@@ -47,6 +47,9 @@
                   <button type="button" class="botao-secundario" (click)="abrirRegistroMovimento(saldo)">
                     Registrar devolução
                   </button>
+                  <button type="button" class="botao-secundario" (click)="abrirRegistroPagamento(saldo)">
+                    Cliente vai pagar (não devolveu)
+                  </button>
                 </td>
               </tr>
             }
@@ -67,6 +70,7 @@
               <th>Tipo de casco</th>
               <th>Movimento</th>
               <th class="numero">Quantidade</th>
+              <th class="numero">Valor cobrado</th>
               <th>Observação</th>
               <th></th>
             </tr>
@@ -82,11 +86,13 @@
                     class="selo"
                     [class.selo--inativo]="movimento.tipoMovimento === 'SAIDA'"
                     [class.selo--ativo]="movimento.tipoMovimento === 'DEVOLUCAO'"
+                    [class.selo--alerta]="movimento.tipoMovimento === 'PAGO'"
                   >
-                    {{ movimento.tipoMovimento === 'SAIDA' ? 'Saída' : 'Devolução' }}
+                    {{ movimento.tipoMovimento === 'SAIDA' ? 'Saída' : movimento.tipoMovimento === 'DEVOLUCAO' ? 'Devolução' : 'Pago (não devolveu)' }}
                   </span>
                 </td>
                 <td class="numero">{{ movimento.quantidade }}</td>
+                <td class="numero">{{ movimento.valorCobrado ? ('R$ ' + (movimento.valorCobrado | number: '1.2-2')) : '—' }}</td>
                 <td>{{ movimento.observacao || '—' }}</td>
                 <td class="acoes-linha">
                   @if (authService.ehAdmin()) {
@@ -166,6 +172,7 @@
         <select formControlName="tipoMovimento">
           <option value="SAIDA">Saída (casco foi com o cliente)</option>
           <option value="DEVOLUCAO">Devolução (cliente trouxe de volta)</option>
+          <option value="PAGO">Pago (cliente optou por pagar em vez de devolver)</option>
         </select>
       </label>
 
@@ -174,6 +181,12 @@
         <input type="number" formControlName="quantidade" min="1" step="1" />
         @if (formMovimento.get('quantidade')?.invalid && formMovimento.get('quantidade')?.touched) {
           <small class="form-erro">Informe uma quantidade válida.</small>
+        }
+        @if (valorCobradoPrevisto() !== null) {
+          <small class="form-dica">
+            Valor a cobrar: <strong>R$ {{ valorCobradoPrevisto() | number: '1.2-2' }}</strong>
+            (baseado no valor de reposição cadastrado para esse tipo de casco)
+          </small>
         }
       </label>
 

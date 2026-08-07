@@ -104,6 +104,28 @@ export class VasilhamesComponent implements OnInit {
     this.modalMovimentoAberto.set(true);
   }
 
+  /** Atalho a partir da linha de saldo: já abre o form com "Pago" selecionado e a quantidade em aberto. */
+  abrirRegistroPagamento(saldo: SaldoCasco): void {
+    this.formMovimento.reset({
+      clienteId: saldo.clienteId,
+      tipoCascoId: saldo.tipoCascoId,
+      tipoMovimento: 'PAGO',
+      quantidade: saldo.quantidadeEmAberto,
+      observacao: '',
+    });
+    this.modalMovimentoAberto.set(true);
+  }
+
+  /** Prévia do valor que será cobrado — quantidade x valor de reposição do tipo de casco selecionado. */
+  valorCobradoPrevisto(): number | null {
+    const valores = this.formMovimento.getRawValue();
+    if (valores.tipoMovimento !== 'PAGO' || !valores.tipoCascoId || !valores.quantidade) {
+      return null;
+    }
+    const tipo = this.tiposCasco().find((t) => t.id === Number(valores.tipoCascoId));
+    return tipo ? tipo.valorReposicao * Number(valores.quantidade) : null;
+  }
+
   fecharModalMovimento(): void {
     this.modalMovimentoAberto.set(false);
   }

@@ -14,6 +14,7 @@ import com.sandrojam.controlevendas.repository.TipoCascoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,8 +24,9 @@ import java.util.Map;
 
 /**
  * Controle de vasilhame/casco: cada saída registra cascos que foram com o cliente (venda ou
- * empréstimo avulso) e cada devolução abate esse saldo. O saldo em aberto nunca fica negativo —
- * não é permitido devolver mais do que o cliente tem pendente.
+ * empréstimo avulso); cada devolução física ou pagamento da reposição (quando o cliente opta por
+ * pagar em vez de devolver) abate esse saldo. O saldo em aberto nunca fica negativo — não é
+ * permitido devolver/pagar mais do que o cliente tem pendente.
  */
 @Service
 @Transactional
@@ -52,8 +54,10 @@ public class MovimentoCascoService {
     }
 
     /**
-     * Registra uma saída (casco foi com o cliente) ou devolução. Para devolução, valida que
-     * o cliente não está devolvendo mais do que tem em aberto para aquele tipo de casco.
+     * Registra uma saída (casco foi com o cliente), devolução física, ou pagamento da reposição
+     * (cliente opta por pagar em vez de devolver). Devolução e pagamento validam que o cliente
+     * não está baixando mais do que tem em aberto para aquele tipo de casco; pagamento também
+     * calcula o valor cobrado (quantidade x valor de reposição do tipo de casco).
      */
     public MovimentoCascoDTO registrar(MovimentoCascoDTO dto) {
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
@@ -63,12 +67,13 @@ public class MovimentoCascoService {
 
         TipoMovimentoCasco tipoMovimento = TipoMovimentoCasco.valueOf(dto.getTipoMovimento());
 
-        if (tipoMovimento == TipoMovimentoCasco.DEVOLUCAO) {
+        if (tipoMovimento == TipoMovimentoCasco.DEVOLUCAO || tipoMovimento == TipoMovimentoCasco.PAGO) {
             int saldoAtual = calcularSaldo(dto.getClienteId(), dto.getTipoCascoId());
             if (dto.getQuantidade() > saldoAtual) {
+                String acao = tipoMovimento == TipoMovimentoCasco.PAGO ? "pagar a reposição de" : "devolver";
                 throw new RegraNegocioException(
                         "Cliente tem apenas " + saldoAtual + " casco(s) \"" + tipoCasco.getNome()
-                                + "\" em aberto — não é possível devolver " + dto.getQuantidade() + ".");
+                                + "\" em aberto — não é possível " + acao + " " + dto.getQuantidade() + ".");
             }
         }
 
@@ -80,6 +85,10 @@ public class MovimentoCascoService {
         movimento.setData(dto.getData() != null ? dto.getData() : LocalDate.now());
         movimento.setVendaId(dto.getVendaId());
         movimento.setObservacao(dto.getObservacao());
+
+        if (tipoMovimento == TipoMovimentoCasco.PAGO) {
+            movimento.setValorCobrado(tipoCasco.getValorReposicao().multiply(BigDecimal.valueOf(dto.getQuantidade())));
+        }
 
         return toDTO(movimentoCascoRepository.save(movimento));
     }
@@ -113,7 +122,7 @@ public class MovimentoCascoService {
 
             int delta = movimento.getTipoMovimento() == TipoMovimentoCasco.SAIDA
                     ? movimento.getQuantidade()
-                    : -movimento.getQuantidade();
+                    : -movimento.getQuantidade(); // DEVOLUCAO ou PAGO — os dois baixam o saldo em aberto
             saldo.setQuantidadeEmAberto(saldo.getQuantidadeEmAberto() + delta);
         }
 
@@ -126,7 +135,7 @@ public class MovimentoCascoService {
     private int calcularSaldo(Long clienteId, Long tipoCascoId) {
         return movimentoCascoRepository.findByCliente_IdAndTipoCasco_IdOrderByDataAsc(clienteId, tipoCascoId).stream()
                 .mapToInt(m -> m.getTipoMovimento() == TipoMovimentoCasco.SAIDA ? m.getQuantidade() : -m.getQuantidade())
-                .sum();
+                .sum(); // DEVOLUCAO ou PAGO — os dois baixam o saldo em aberto
     }
 
     private MovimentoCascoDTO toDTO(MovimentoCasco movimento) {
@@ -140,6 +149,7 @@ public class MovimentoCascoService {
         dto.setQuantidade(movimento.getQuantidade());
         dto.setData(movimento.getData());
         dto.setVendaId(movimento.getVendaId());
+        dto.setValorCobrado(movimento.getValorCobrado());
         dto.setObservacao(movimento.getObservacao());
         return dto;
     }
